@@ -353,14 +353,13 @@ rm $FILE
 
 clear
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-
-echo "Loading Configuration  : Done."
-source $HOME/.config/meoConnect/meoConnect.conf
-
 echo "-------------------------------------------------------------------------------"
 echo "|                         MEO Wifi AutoConnect v$version                         |"
 echo "-------------------------------------------------------------------------------"
+
+echo "Loading Configuration  : Done."
+source $HOME/.config/meoConnect/meoConnect.conf
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 echo -n "Checking Dependencies  : "
 for name in protonvpn-cli geany mpg321

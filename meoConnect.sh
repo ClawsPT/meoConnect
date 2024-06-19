@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.346'
+version='0.348'
 
 #  meoConnect.sh
 #  
@@ -353,6 +353,8 @@ rm $FILE
 
 clear
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 echo "-------------------------------------------------------------------------------"
 echo "|                         MEO Wifi AutoConnect v$version                         |"
 echo "-------------------------------------------------------------------------------"
@@ -369,8 +371,8 @@ if [ ! -f $HOME/.config/meoConnect/meoConnect.conf ]; then
     editSettings
 	echo "Reloading script"
 	sleep 1
-	exec /home/claws/bin/meoConnect.sh 
-	mpg321 -q /home/claws/bin/alarm.mp3
+	exec $SCRIPT_DIR/meoConnect.sh 
+	mpg321 -q $SCRIPT_DIR/alarm.mp3
 	exit
 fi
 echo "Loading Configuration  : Done."
@@ -488,7 +490,7 @@ while true ; do
 # -------------------------------------- OFFLINE ------------------------------------
 
 		echo " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S") - Offline - $(date "+%d-%m-%y - %H:%M:%S")"
-		mpg321 -q /home/claws/bin/alarm.mp3
+		mpg321 -q $SCRIPT_DIR/alarm.mp3
 		echo "-------------------------------------------------------------------------------"
 		
 #Disconnect Proton VPN & Reconnect to MeoWiFi	
@@ -612,7 +614,7 @@ while true ; do
 		elif [[ $skip = "r" ]]; then
 			echo "Reloading script"
 			sleep 1
-			mpg321 -q /home/claws/bin/alarm.mp3
+			mpg321 -q $SCRIPT_DIR/alarm.mp3
 			exec meoConnect.sh 
 			exit
 		fi	

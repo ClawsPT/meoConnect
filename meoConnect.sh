@@ -363,7 +363,7 @@ echo "|                         MEO Wifi AutoConnect v$version                  
 echo "-------------------------------------------------------------------------------"
 
 echo -n "Checking Dependencies  : "
-for name in protonvpn-cli geany
+for name in protonvpn-cli geany mpg321
 	do
 	  [[ $(which $name 2>/dev/null) ]] || { echo -en "\n$name needs to be installed. Use 'sudo apt-get install $name'";deps=1; }
 	done

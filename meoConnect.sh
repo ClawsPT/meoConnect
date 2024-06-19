@@ -1,10 +1,10 @@
 #!/bin/bash
 
-version='0.348'
+version='0.349'
 
 #  meoConnect.sh
 #  
-#  Copyright 2024 Claws <claws@sapo.pt>
+#  Copyright 2024 ClawsPT <claws@sapo.pt>
 #----------------------------------------------------------------------- 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -355,6 +355,9 @@ clear
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+echo "Loading Configuration  : Done."
+source $HOME/.config/meoConnect/meoConnect.conf
+
 echo "-------------------------------------------------------------------------------"
 echo "|                         MEO Wifi AutoConnect v$version                         |"
 echo "-------------------------------------------------------------------------------"
@@ -375,8 +378,6 @@ if [ ! -f $HOME/.config/meoConnect/meoConnect.conf ]; then
 	mpg321 -q $SCRIPT_DIR/alarm.mp3
 	exit
 fi
-echo "Loading Configuration  : Done."
-source $HOME/.config/meoConnect/meoConnect.conf
 
 echo -n "Checking User  "
 rTest=$(echo $rPasswd | su $(whoami) -c 'echo "Done."')

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.352'
+version='0.357'
 
 #  meoConnect.sh
 #  
@@ -199,12 +199,10 @@ connectMeoWiFi () {
 	
 	while [ "$json" = "" -a "$connRetry" -ge 1 ] ;do
 		sleep 1
-		json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/Login?username="$user"&password="$encPwd"&navigatorLang=pt&callback=foo")
+		json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/Login?username="$user"&password="$encPwd"&navigatorLang=pt")
 		connRetry=$(expr $connRetry - 1 )
 	done
 	
-	json=${json#????}
-	json=${json%??}
 	error=$(echo $json | jq '.error')
 	if [[ "$error" ]]; then
 		echo "$error"
@@ -401,8 +399,8 @@ if [ ! $rPasswd ] ; then
 fi
 
 echo -n "Checking Connection    : "
-netStatus=$(echo $(curl $curlCmd --head  --request GET www.google.com |grep "HTTP/"))
-	
+netStatus=""
+netStatus=$(echo $(curl $curlCmd --head  --request GET www.google.com |grep "HTTP/"))	
 if [[ $(echo $netStatus | grep "Moved") ]]; then #Moved -> redirected to login portal
 	netStatus=""
 fi
@@ -410,11 +408,10 @@ fi
 if [[ "$netStatus" ]]; then
 	echo "Connected."
 	echo -n "Getting Connection Time: "
-	meoTime=""	
+	meoTime=""
+	json=""	
 	while [[ ! "$meoTime" ]] ;do	 
-		json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?callback=foo&mobile=false&pagePath=foo")
-		json=${json#????}
-		json=${json%??}
+		json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
 		json=$(echo $json | jq '.Consumption')
 		meoTime=$(echo $json | jq '.Time')
 		meoTime=${meoTime#?}
@@ -441,7 +438,7 @@ while true ; do
 	totaltime=$(($currenttime - $starttime))
 
 #-------------------------------- Check Connection ----------------------------------
-
+	netStatus=""
 	netStatus=$(echo $(curl $curlCmd --head www.google.com |grep "HTTP/"))
 		
 	if [[ $(echo $netStatus | grep "Moved") ]]; then #Moved -> redirected to login portal
@@ -507,9 +504,7 @@ while true ; do
 			echo -n "Cheking connection time: "
 			meoTime=""	
 			while [[ ! "$meoTime" ]] ;do	 
-				json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?callback=foo&mobile=false&pagePath=foo")
-				json=${json#????}
-				json=${json%??}
+				json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
 				json=$(echo $json | jq '.Consumption')
 				meoTime=$(echo $json | jq '.Time')
 				meoTime=${meoTime#?}
@@ -534,7 +529,7 @@ while true ; do
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
 			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"
 			vpnDisconnect
-			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
+			#nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
 		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] ; then
 			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"
 			sleep 2
@@ -544,7 +539,7 @@ while true ; do
 #Stoping ProtonVPN and reconnecting wifi
 			vpnDisconnect
 			echo "Reconnecting MEO WiFi"
-			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
+			#nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
 			sleep 5			
 			continue
 		fi
@@ -592,9 +587,7 @@ while true ; do
 			
 		elif [[ $skip = "s" ]]; then		
 			echo "-------------------------------------------------------------------------------"		
-			json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?callback=foo&mobile=false&pagePath=foo")
-			json=${json#????}
-			json=${json%??}
+			json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
 			echo "Corrent connection:"
 			json=$(echo $json | jq '.Consumption')
 			echo "DownstreamMB: $(echo $json | jq '.DownstreamMB')"

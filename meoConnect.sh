@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.349'
+version='0.352'
 
 #  meoConnect.sh
 #  
@@ -362,7 +362,7 @@ source $HOME/.config/meoConnect/meoConnect.conf
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 echo -n "Checking Dependencies  : "
-for name in protonvpn-cli geany mpg321
+for name in protonvpn-cli geany mpg321 vnstat curl jq awk notify-send
 	do
 	  [[ $(which $name 2>/dev/null) ]] || { echo -en "\n$name needs to be installed. Use 'sudo apt-get install $name'";deps=1; }
 	done

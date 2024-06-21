@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.357'
+version='0.360'
 
 #  meoConnect.sh
 #  
@@ -173,8 +173,9 @@ vpnConnect () {
 }
 
 vpnDisconnect () {
+	
+	echo -n "Disconnecting ProtonVPN: "	
 	if [[ $(ifconfig | grep proton) ]] ; then
-		echo -n "Disconnecting ProtonVPN: "
 		vpnDisConn=$(timeout --preserve-status -k 5 30 protonvpn-cli d | grep "Successfully disconnected")  #timeout --preserve-status 20 
 		if [[ "$vpnDisConn" ]]; then
 			echo "Successfully disconnected."
@@ -416,12 +417,17 @@ if [[ "$netStatus" ]]; then
 		meoTime=$(echo $json | jq '.Time')
 		meoTime=${meoTime#?}
 		meoTime=${meoTime%?}
-		echo "$meoTime:00"
 	done
-	meoTime="$meoTime:00"
-	meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
-	currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				
-	starttime=$(($currenttime - $meoTime))
+	
+	if [ "$meoTime" != "ul" ]; then
+		meoTime="$meoTime:00"
+		meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
+		currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				
+		starttime=$(($currenttime - $meoTime))
+	else
+		echo "Unable to retrive"
+		starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
+	fi
 else
 	echo "Disconnected."
 	starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
@@ -429,6 +435,7 @@ fi
 echo "-------------------------------------------------------------------------------"
 echo "$(date "+%Y-%m-%d - %H:%M:%S") - Starting script"
 echo "-------------------------------------------------------------------------------"
+
 
 # -------------------------------- Start Loop ---------------------------------------
 
@@ -492,7 +499,7 @@ while true ; do
 		
 #Disconnect Proton VPN & Reconnect to MeoWiFi	
 		#echo "Reconnecting MEO WiFi"	
-		#nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null		
+		#nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null		 
 		vpnDisconnect
 		
 #Login into MEO-WiFi
@@ -510,11 +517,16 @@ while true ; do
 				meoTime=${meoTime#?}
 				meoTime=${meoTime%?}
 			done
-			meoTime="$meoTime:00"
-			echo "$meoTime"
-			meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
-			currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				
-			starttime=$(($currenttime - $meoTime))			
+			
+			if [ "$meoTime" != "ul" ]; then
+				meoTime="$meoTime:00"
+				meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
+				currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				
+				starttime=$(($currenttime - $meoTime))
+			else
+				echo "Unable to retrive"
+				starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
+			fi
 			sleep 2
 		
 #Start VPN 			
@@ -529,7 +541,7 @@ while true ; do
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
 			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"
 			vpnDisconnect
-			#nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
+			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
 		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] ; then
 			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"
 			sleep 2
@@ -539,7 +551,7 @@ while true ; do
 #Stoping ProtonVPN and reconnecting wifi
 			vpnDisconnect
 			echo "Reconnecting MEO WiFi"
-			#nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
+			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
 			sleep 5			
 			continue
 		fi
@@ -581,7 +593,7 @@ while true ; do
 			
 			
 		
-			vpnConnect
+			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
 			
 			
 			

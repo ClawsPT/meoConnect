@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.360'
+version='0.367'
 
 #  meoConnect.sh
 #  
@@ -195,7 +195,7 @@ connectMeoWiFi () {
 	ip=$(ip addr show wlan1 | awk '/inet / {print $2}')
 	ip=${ip%/*}								
 	encPwd=$(encryptPasswd)
-	connRetry=3
+	connRetry=1
 	json=""
 	
 	while [ "$json" = "" -a "$connRetry" -ge 1 ] ;do
@@ -280,6 +280,10 @@ editSettings () {
 	if [ "$sTemp" ] ; then
 		if [ $sTemp = "y" ] ; then
 			saveSettings
+			echo "Reloading script"
+			sleep 1
+			exec $SCRIPT_DIR/meoConnect.sh 
+			mpg321 -q $SCRIPT_DIR/alarm.mp3
 		fi
 	fi
 }
@@ -324,7 +328,7 @@ vpnMload='$vpnMload'
 editor='$editor'
 
 # curl command
-curlCmd="-s --interface wlan1 --connect-timeout 20 --max-time 10 -H 'Cache-Control: no-cache, no-store'"
+curlCmd='-s --interface wlan1 --connect-timeout 20 --max-time 10 -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0"'
 
 EOF
 }
@@ -370,10 +374,6 @@ for name in protonvpn-cli geany mpg321 vnstat curl jq awk notify-send
 if [ ! -f $HOME/.config/meoConnect/meoConnect.conf ]; then
     echo "Configuration File not found..."
     editSettings
-	echo "Reloading script"
-	sleep 1
-	exec $SCRIPT_DIR/meoConnect.sh 
-	mpg321 -q $SCRIPT_DIR/alarm.mp3
 	exit
 fi
 
@@ -408,6 +408,7 @@ fi
 	
 if [[ "$netStatus" ]]; then
 	echo "Connected."
+#	iwconfig wlan1 | grep Access
 	echo -n "Getting Connection Time: "
 	meoTime=""
 	json=""	
@@ -415,12 +416,13 @@ if [[ "$netStatus" ]]; then
 		json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
 		json=$(echo $json | jq '.Consumption')
 		meoTime=$(echo $json | jq '.Time')
-		meoTime=${meoTime#?}
-		meoTime=${meoTime%?}
 	done
 	
-	if [ "$meoTime" != "ul" ]; then
+	if [ "$meoTime" != "null" ]; then
+		meoTime=${meoTime#?}
+		meoTime=${meoTime%?}
 		meoTime="$meoTime:00"
+		echo "$meoTime"
 		meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
 		currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				
 		starttime=$(($currenttime - $meoTime))
@@ -514,12 +516,13 @@ while true ; do
 				json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
 				json=$(echo $json | jq '.Consumption')
 				meoTime=$(echo $json | jq '.Time')
-				meoTime=${meoTime#?}
-				meoTime=${meoTime%?}
 			done
 			
-			if [ "$meoTime" != "ul" ]; then
+			if [ "$meoTime" != "null" ]; then
+				meoTime=${meoTime#?}
+				meoTime=${meoTime%?}
 				meoTime="$meoTime:00"
+				echo "$meoTime"
 				meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
 				currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				
 				starttime=$(($currenttime - $meoTime))
@@ -541,7 +544,9 @@ while true ; do
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
 			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"
 			vpnDisconnect
+			echo "Reconnecting MEO WiFi"
 			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
+			iwconfig wlan1 | grep Access
 		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] ; then
 			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"
 			sleep 2
@@ -552,6 +557,7 @@ while true ; do
 			vpnDisconnect
 			echo "Reconnecting MEO WiFi"
 			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
+			iwconfig wlan1 | grep Access
 			sleep 5			
 			continue
 		fi
@@ -594,6 +600,7 @@ while true ; do
 			
 		
 			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
+			iwconfig wlan1 | grep Access
 			
 			
 			
@@ -605,15 +612,21 @@ while true ; do
 			echo "DownstreamMB: $(echo $json | jq '.DownstreamMB')"
 			echo "UpstreamMB: $(echo $json | jq '.UpstreamMB')"
 			echo "Time: $(echo $json | jq '.Time')"
-			echo "Updating clock"
-			echo "-------------------------------------------------------------------------------"
 			meoTime=$(echo $json | jq '.Time')
-			meoTime=${meoTime#?}
-			meoTime=${meoTime%?}":00"
-			meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
-			currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)			
-			starttime=$(expr $currenttime - $meoTime)
-		
+			
+			if [ "$meoTime" != "null" ]; then
+				echo -n "Updating clock: "			
+				meoTime=${meoTime#?}
+				meoTime=${meoTime%?}
+				meoTime="$meoTime:00"
+				meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
+				currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				
+				starttime=$(($currenttime - $meoTime))
+				echo "Done."
+			else
+				starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
+			fi
+			echo "-------------------------------------------------------------------------------"		
 		elif [[ $skip = "q" ]]; then
 			exit
 		elif [[ $skip = "r" ]]; then

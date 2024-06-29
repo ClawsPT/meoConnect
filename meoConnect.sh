@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.367'
+version='0.368'
 
 #  meoConnect.sh
 #  
@@ -539,7 +539,6 @@ while true ; do
 				vpnConnect
 			fi
 			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
-			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 			
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
 			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"

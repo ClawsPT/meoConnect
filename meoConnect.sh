@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.368'
+version='0.372'
 
 #  meoConnect.sh
 #  
@@ -224,35 +224,35 @@ editSettings () {
 	
 # WiFi Connection Name
 	nmcli connection show | grep "wifi"
-	echo -n "Please enter WiFi Connection Name ($wifiap):"
+	echo -n "WiFi Connection Name ($wifiap):"
 	read -r sTemp
 	if [ "$sTemp" ] ; then
 		wifiap=$sTemp
 	fi
 	
 # Wireless device name
-	echo -n "Please enter Wireless device name ($wifiif):"
+	echo -n "Wireless device name ($wifiif):"
 	read -r sTemp
 	if [ "$sTemp" ] ; then
 		wifiif=$sTemp
 	fi
 	
 # Meo WiFi username
-	echo -n "Please enter Meo WiFi username ($user):"
+	echo -n "Meo WiFi username ($user):"
 	read -r sTemp
 	if [ "$sTemp" ] ; then
 		user=$sTemp
 	fi
 	
 # Meo WiFi Password
-	echo -n "Please enter Meo WiFi Password ($passwd):"
+	echo -n "Meo WiFi Password ($passwd):"
 	read -r sTemp
 	if [ "$sTemp" ] ; then
 		passwd=$sTemp
 	fi
 	
 # Time in seconds between network checks
-	echo -n "Please enter  Time in seconds between network checks ($recheckTime):"
+	echo -n "Time in seconds between network checks ($recheckTime):"
 	read -r sTemp
 	if [ "$sTemp" ] ; then
 		recheckTime=$sTemp
@@ -266,10 +266,16 @@ editSettings () {
 	fi
 	
 # VPN max load %
-	echo -n "Please enter VPN max load ($vpnMload):"
+	echo -n "VPN max load ($vpnMload):"
 	read -r sTemp
 	if [ "$sTemp" ] ; then
 		vpnMload=$sTemp
+	fi
+# VPN max load %
+	echo -n "Command to run on successful login ($onlineCommand):"
+	read -r sTemp
+	if [ "$sTemp" ] ; then
+		onlineCommand=$sTemp
 	fi
 	
 # Text Editor
@@ -329,6 +335,10 @@ editor='$editor'
 
 # curl command
 curlCmd='-s --interface wlan1 --connect-timeout 20 --max-time 10 -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0"'
+
+#onlineCommand
+
+onlineCommand='$onlineCommand'
 
 EOF
 }
@@ -409,6 +419,7 @@ fi
 if [[ "$netStatus" ]]; then
 	echo "Connected."
 #	iwconfig wlan1 | grep Access
+	foo=$($onlineCommand)
 	echo -n "Getting Connection Time: "
 	meoTime=""
 	json=""	
@@ -530,6 +541,7 @@ while true ; do
 				echo "Unable to retrive"
 				starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 			fi
+			foo=$($onlineCommand)
 			sleep 2
 		
 #Start VPN 			

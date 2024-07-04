@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.372'
+version='0.376'
 
 #  meoConnect.sh
 #  
@@ -195,20 +195,20 @@ connectMeoWiFi () {
 	ip=$(ip addr show wlan1 | awk '/inet / {print $2}')
 	ip=${ip%/*}								
 	encPwd=$(encryptPasswd)
-	connRetry=1
+	connRetryTemp=$(expr $connRetry + 1 )
 	json=""
 	
-	while [ "$json" = "" -a "$connRetry" -ge 1 ] ;do
+	while [ "$json" = "" -a "$connRetryTemp" -ge 1 ] ;do
 		sleep 1
 		json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/Login?username="$user"&password="$encPwd"&navigatorLang=pt")
-		connRetry=$(expr $connRetry - 1 )
+		connRetry=$(expr $connRetryTemp - 1 )
 	done
 	
 	error=$(echo $json | jq '.error')
 	if [[ "$error" ]]; then
 		echo "$error"
 	else
-		echo "Connection timeout. ($connRetry) $json"
+		echo "Connection timeout. ($connRetryTemp) $json"
 	fi
 }
 
@@ -271,6 +271,14 @@ editSettings () {
 	if [ "$sTemp" ] ; then
 		vpnMload=$sTemp
 	fi
+	
+# Number of retries
+	echo -n "Number of retries ($connRetry):"
+	read -r sTemp
+	if [ "$sTemp" ] ; then
+		connRetry=$sTemp
+	fi
+	
 # VPN max load %
 	echo -n "Command to run on successful login ($onlineCommand):"
 	read -r sTemp
@@ -336,8 +344,10 @@ editor='$editor'
 # curl command
 curlCmd='-s --interface wlan1 --connect-timeout 20 --max-time 10 -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0"'
 
-#onlineCommand
+# Number of retries
+connRetry='$connRetry'
 
+#onlineCommand
 onlineCommand='$onlineCommand'
 
 EOF
@@ -459,13 +469,18 @@ while true ; do
 
 #-------------------------------- Check Connection ----------------------------------
 	netStatus=""
-	netStatus=$(echo $(curl $curlCmd --head www.google.com |grep "HTTP/"))
-		
-	if [[ $(echo $netStatus | grep "Moved") ]]; then #Moved -> redirected to login portal
-		echo "Redirected to login portal"
-		netStatus=""
-	fi
+	connRetryTemp=$(expr $connRetry + 1 )
 	
+	while [ "$netStatus" = "" -a "$connRetryTemp" -ge 1 ] ;do
+		sleep 1
+		netStatus=$(echo $(curl $curlCmd --head www.google.com |grep "HTTP/"))
+			
+		if [[ $(echo $netStatus | grep "Moved") ]]; then #Moved -> redirected to login portal
+			echo "Redirected to login portal"
+			netStatus=""
+		fi
+		connRetry=$(expr $connRetryTemp - 1 )
+	done
 # ---------------------------------- ONLINE -----------------------------------------
 	
 	if [[ "$netStatus" ]]; then
@@ -521,6 +536,7 @@ while true ; do
 		connect=$(connectMeoWiFi)
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
 			echo "Successfully connected to MEO WiFi"
+			foo=$($onlineCommand)
 			echo -n "Cheking connection time: "
 			meoTime=""	
 			while [[ ! "$meoTime" ]] ;do	 
@@ -541,7 +557,6 @@ while true ; do
 				echo "Unable to retrive"
 				starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 			fi
-			foo=$($onlineCommand)
 			sleep 2
 		
 #Start VPN 			
@@ -568,7 +583,7 @@ while true ; do
 			vpnDisconnect
 			echo "Reconnecting MEO WiFi"
 			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
-			iwconfig wlan1 | grep Access
+			#iwconfig wlan1 | grep Access
 			sleep 5			
 			continue
 		fi
@@ -610,8 +625,7 @@ while true ; do
 			
 			
 		
-			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
-			iwconfig wlan1 | grep Access
+			foo=$($onlineCommand)
 			
 			
 			

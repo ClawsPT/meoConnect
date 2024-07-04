@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.376'
+version='0.378'
 
 #  meoConnect.sh
 #  
@@ -199,9 +199,8 @@ connectMeoWiFi () {
 	json=""
 	
 	while [ "$json" = "" -a "$connRetryTemp" -ge 1 ] ;do
-		sleep 1
 		json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/Login?username="$user"&password="$encPwd"&navigatorLang=pt")
-		connRetry=$(expr $connRetryTemp - 1 )
+		connRetryTemp=$(expr $connRetryTemp - 1 )
 	done
 	
 	error=$(echo $json | jq '.error')
@@ -472,14 +471,14 @@ while true ; do
 	connRetryTemp=$(expr $connRetry + 1 )
 	
 	while [ "$netStatus" = "" -a "$connRetryTemp" -ge 1 ] ;do
-		sleep 1
 		netStatus=$(echo $(curl $curlCmd --head www.google.com |grep "HTTP/"))
 			
 		if [[ $(echo $netStatus | grep "Moved") ]]; then #Moved -> redirected to login portal
 			echo "Redirected to login portal"
 			netStatus=""
+			connRetryTemp=0
 		fi
-		connRetry=$(expr $connRetryTemp - 1 )
+		connRetryTemp=$(expr $connRetryTemp - 1 )
 	done
 # ---------------------------------- ONLINE -----------------------------------------
 	

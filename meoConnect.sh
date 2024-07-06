@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.378'
+version='0.380'
 
 #  meoConnect.sh
 #  
@@ -535,7 +535,6 @@ while true ; do
 		connect=$(connectMeoWiFi)
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
 			echo "Successfully connected to MEO WiFi"
-			foo=$($onlineCommand)
 			echo -n "Cheking connection time: "
 			meoTime=""	
 			while [[ ! "$meoTime" ]] ;do	 
@@ -565,14 +564,15 @@ while true ; do
 				vpnConnect
 			fi
 			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
-			
+			foo=$($onlineCommand)	
+					
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
 			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"
 			vpnDisconnect
 			echo "Reconnecting MEO WiFi"
 			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
 			iwconfig wlan1 | grep Access
-		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] ; then
+		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == '"The service is unavailable."' ] ; then
 			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"
 			sleep 2
 			continue

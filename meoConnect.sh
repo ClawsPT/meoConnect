@@ -1,6 +1,8 @@
 #!/bin/bash
 
-version='0.380'
+version='0.383'
+
+confFile=$HOME/.config/meoConnect/${0##*/}.conf
 
 #  meoConnect.sh
 #  
@@ -303,8 +305,8 @@ editSettings () {
 
 saveSettings () {
 
-echo "Saving Settings into $HOME/.config/meoConnect/meoConnect.conf"	
-FILE="$HOME/.config/meoConnect/meoConnect.conf"
+echo "Saving Settings into $confFile"	
+FILE="$confFile"
 mkdir -p $HOME/.config/meoConnect
 touch $FILE
 
@@ -379,8 +381,8 @@ echo "--------------------------------------------------------------------------
 echo "|                         MEO Wifi AutoConnect v$version                         |"
 echo "-------------------------------------------------------------------------------"
 
-echo "Loading Configuration  : Done."
-source $HOME/.config/meoConnect/meoConnect.conf
+echo "Loading Configuration($confFile): Done."
+source $confFile
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 echo -n "Checking Dependencies  : "
@@ -390,7 +392,7 @@ for name in protonvpn-cli geany mpg321 vnstat curl jq awk notify-send
 	done
 	[[ $deps -ne 1 ]] && echo "Done." || { echo -en "\nInstall the above and rerun this script\n";exit 1; }
 
-if [ ! -f $HOME/.config/meoConnect/meoConnect.conf ]; then
+if [ ! -f $confFile ]; then
     echo "Configuration File not found..."
     editSettings
 	exit
@@ -510,7 +512,7 @@ while true ; do
 		
 	#Get traffic and cpu
 		cpuuse=$(cat <(grep 'cpu ' /proc/stat) <(sleep 1 && grep 'cpu ' /proc/stat) | awk -v RS="" '{printf "%6.2f%\n", ($13-$2+$15-$4)*100/($13-$2+$15-$4+$16-$5)}')
-		IN=$(vnstat -d | (tail -n3))
+		IN=$(vnstat $wifiif -d | (tail -n3))
 		INR=${IN//estimated}
 		arrOUT=(${INR//|/ })
 		echo -n " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")|Up/Dn ${arrOUT[5]} ${arrOUT[6]}"
@@ -614,7 +616,7 @@ while true ; do
 			fi
 		elif [[ $skip = "e" ]]; then
 			echo "Running script editor..."
-			$( nohup $editor $(dirname "$0")/meoConnect.sh $HOME/.config/meoConnect/meoConnect.conf> /dev/null 2>&1 & )
+			$( nohup $editor $(dirname "$0")/meoConnect.sh $confFile> /dev/null 2>&1 & )
 		elif [[ $skip = "c" ]]; then
 			editSettings
 		

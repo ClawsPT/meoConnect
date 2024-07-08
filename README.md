@@ -1,1 +1,3 @@
-Work in progress
+... Work in progress ...
+
+Autoconnect for MEO-WiFi HotSpots 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.383'
+version='0.385'
 
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
 
@@ -572,8 +572,18 @@ while true ; do
 			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"
 			vpnDisconnect
 			echo "Reconnecting MEO WiFi"
+			nmcli device down "$wifiif"
+			skipTime=300
+			skip=""
+			while [ "$skip" != "c" -a "$skipTime" -ge 0 ] ;do 
+				echo -n -e ">>>>>>>> Resuming in $skipTime""s --- C to continue. <<<<<<<<"
+				read -rsn1 -t 1 skip
+				echo -e -n "\r\033[K"
+				if [[ $skip = "" ]]; then
+					skipTime=$(expr $skipTime - 1 )
+				fi
+			done
 			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
-			iwconfig wlan1 | grep Access
 		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == '"The service is unavailable."' ] ; then
 			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"
 			sleep 2

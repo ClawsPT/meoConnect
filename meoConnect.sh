@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.389'
+version='0.390'
 
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
 
@@ -506,8 +506,8 @@ while true ; do
 				serverLoad="$serverLoad%"
 			fi
 		else
-			serverName=""
-			serverLoad="VPN Offline"
+			serverName="VPN"
+			serverLoad="Offline"
 		fi
 		
 	#Get traffic and cpu

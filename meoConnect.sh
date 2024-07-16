@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.385'
+version='0.389'
 
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
 
@@ -511,12 +511,12 @@ while true ; do
 		fi
 		
 	#Get traffic and cpu
-		cpuuse=$(cat <(grep 'cpu ' /proc/stat) <(sleep 1 && grep 'cpu ' /proc/stat) | awk -v RS="" '{printf "%6.2f%\n", ($13-$2+$15-$4)*100/($13-$2+$15-$4+$16-$5)}')
+		cpuuse=$(cat <(grep 'cpu ' /proc/stat) <(sleep 1 && grep 'cpu ' /proc/stat) | awk -v RS="" '{printf "%3.0f%\n", ($13-$2+$15-$4)*100/($13-$2+$15-$4+$16-$5)}')
 		IN=$(vnstat $wifiif -d | (tail -n3))
 		INR=${IN//estimated}
 		arrOUT=(${INR//|/ })
-		echo -n " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")|Up/Dn ${arrOUT[5]} ${arrOUT[6]}"
-		echo -n "|$serverName $serverLoad|CPU $cpuuse|"
+		echo -n " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")|U/D ${arrOUT[5]} ${arrOUT[6]}"
+		echo -n "|$serverName $serverLoad|U$cpuuse|T" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
 		echo -e $netStatus	
 	else
 

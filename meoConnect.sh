@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.390'
+version='0.402'
 
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
 
@@ -149,7 +149,7 @@ if __name__ == '__main__':
 EOF
 )
 
-ip=$(ip addr show wlan1 | awk '/inet / {print $2}')
+ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 ip=${ip%/*}	
 
 echo $(python3 -c "$PYCMD" -u $ip -p $passwd)	
@@ -192,9 +192,9 @@ vpnDisconnect () {
 	setDNS
 }
 
-connectMeoWiFi () {
+connectMeoWiFiv1 () {
 
-	ip=$(ip addr show wlan1 | awk '/inet / {print $2}')
+	ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 	ip=${ip%/*}								
 	encPwd=$(encryptPasswd)
 	connRetryTemp=$(expr $connRetry + 1 )
@@ -210,6 +210,36 @@ connectMeoWiFi () {
 		echo "$error"
 	else
 		echo "Connection timeout. ($connRetryTemp) $json"
+	fi
+}
+
+connectMeoWiFiv2 () {
+
+	ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+	ip=${ip%/*}	
+	url="https://meowifi.meo.pt/wifim-scl/service/session-status"
+	body="{\"ipAddress\":\"$ip\"}"
+
+	# Send a POST request and parse the session ID from the JSON response
+	sessionId=$(curl -s -X POST -H "Content-Type: application/json" -d "$body" "$url")
+	echo $sessionId
+	sessionId=$(echo $sessionId | jq -r '.sessionId')
+	echo $sessionId
+
+		
+	if [ $sessionId != 'null' ] ; then
+		# Construct the URL for session login
+		url="https://meowifi.meo.pt/wifim-scl/service/${sessionId}/session-login"
+
+		# Construct the login request body
+		login_body="{\"userName\":\"$user\",\"password\":\"$passwd\",\"ipAddress\":\"$ip\",\"sessionId\":\"$sessionId\",\"loginType\":\"login\"}"
+
+		# Send a POST request for login
+		response=$(curl -s -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
+
+		echo $response
+	else
+		echo "NO Session Id Found..."
 	fi
 }
 
@@ -343,7 +373,7 @@ vpnMload='$vpnMload'
 editor='$editor'
 
 # curl command
-curlCmd='-s --interface wlan1 --connect-timeout 20 --max-time 10 -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0"'
+curlCmd='-s --interface $wifiif --connect-timeout 20 --max-time 10 -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0"'
 
 # Number of retries
 connRetry='$connRetry'
@@ -437,12 +467,10 @@ if [[ "$netStatus" ]]; then
 	while [[ ! "$meoTime" ]] ;do	 
 		json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
 		json=$(echo $json | jq '.Consumption')
-		meoTime=$(echo $json | jq '.Time')
+		meoTime=$(echo $json | jq -r '.Time')
 	done
 	
 	if [ "$meoTime" != "null" ]; then
-		meoTime=${meoTime#?}
-		meoTime=${meoTime%?}
 		meoTime="$meoTime:00"
 		echo "$meoTime"
 		meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
@@ -525,16 +553,13 @@ while true ; do
 		echo " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S") - Offline - $(date "+%d-%m-%y - %H:%M:%S")"
 		mpg321 -q $SCRIPT_DIR/alarm.mp3
 		echo "-------------------------------------------------------------------------------"
-		
-#Disconnect Proton VPN & Reconnect to MeoWiFi	
-		#echo "Reconnecting MEO WiFi"	
-		#nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null		 
+				 
 		vpnDisconnect
 		
 #Login into MEO-WiFi
 		echo "Login to MEO WiFi...."
 		sleep 5
-		connect=$(connectMeoWiFi)
+		connect=$(connectMeoWiFiv1)
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
 			echo "Successfully connected to MEO WiFi"
 			echo -n "Cheking connection time: "
@@ -542,12 +567,10 @@ while true ; do
 			while [[ ! "$meoTime" ]] ;do	 
 				json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
 				json=$(echo $json | jq '.Consumption')
-				meoTime=$(echo $json | jq '.Time')
+				meoTime=$(echo $json | jq -r '.Time')
 			done
 			
 			if [ "$meoTime" != "null" ]; then
-				meoTime=${meoTime#?}
-				meoTime=${meoTime%?}
 				meoTime="$meoTime:00"
 				echo "$meoTime"
 				meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
@@ -562,7 +585,6 @@ while true ; do
 #Start VPN 			
 			if $vpn ; then
 				echo -n "Connecting to ProtonVPN: "
-				sleep 2
 				vpnConnect
 			fi
 			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
@@ -573,7 +595,7 @@ while true ; do
 			vpnDisconnect
 			echo "Reconnecting MEO WiFi"
 			nmcli device down "$wifiif"
-			skipTime=300
+			skipTime=60
 			skip=""
 			while [ "$skip" != "c" -a "$skipTime" -ge 0 ] ;do 
 				echo -n -e ">>>>>>>> Resuming in $skipTime""s --- C to continue. <<<<<<<<"
@@ -584,6 +606,8 @@ while true ; do
 				fi
 			done
 			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
+			connectMeoWiFiv2
+			
 		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == '"The service is unavailable."' ] ; then
 			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"
 			sleep 2
@@ -594,7 +618,6 @@ while true ; do
 			vpnDisconnect
 			echo "Reconnecting MEO WiFi"
 			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
-			#iwconfig wlan1 | grep Access
 			sleep 5			
 			continue
 		fi
@@ -632,14 +655,15 @@ while true ; do
 		
 #Teste
 		elif [[ $skip = "t" ]]; then
+		
 			echo "------ TESTE -------"
 			
-			
+#Meo New Login
 		
-			foo=$($onlineCommand)
+			connectMeoWiFiv2
 			
 			
-			
+			echo "------ TESTE -------"
 		elif [[ $skip = "s" ]]; then		
 			echo "-------------------------------------------------------------------------------"		
 			json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
@@ -648,12 +672,10 @@ while true ; do
 			echo "DownstreamMB: $(echo $json | jq '.DownstreamMB')"
 			echo "UpstreamMB: $(echo $json | jq '.UpstreamMB')"
 			echo "Time: $(echo $json | jq '.Time')"
-			meoTime=$(echo $json | jq '.Time')
+			meoTime=$(echo $json | jq -r '.Time')
 			
 			if [ "$meoTime" != "null" ]; then
 				echo -n "Updating clock: "			
-				meoTime=${meoTime#?}
-				meoTime=${meoTime%?}
 				meoTime="$meoTime:00"
 				meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
 				currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				

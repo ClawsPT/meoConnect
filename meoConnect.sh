@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.402'
+version='0.403'
 
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
 
@@ -544,7 +544,7 @@ while true ; do
 		INR=${IN//estimated}
 		arrOUT=(${INR//|/ })
 		echo -n " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")|U/D ${arrOUT[5]} ${arrOUT[6]}"
-		echo -n "|$serverName $serverLoad|U$cpuuse|T" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
+		echo -n "|$serverName $serverLoad|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
 		echo -e $netStatus	
 	else
 

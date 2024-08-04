@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.406'
+version='0.407'
 
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
 
@@ -225,8 +225,12 @@ connectMeoWiFiv2 () {
 	# Get start time
 	sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
 	meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
-	meoTime="${meoTime:11:8}"
-	starttime=$(date -d "1970-01-01 $meoTime Z" +%s)
+	if [ "$meoTime" != "null" ]; then
+		meoTime="${meoTime:11:8}"
+		starttime=$(date -d "1970-01-01 $meoTime Z" +%s)
+	else
+		starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
+	fi
 	
 	sessionId=$(echo $sessionId | jq -r '.sessionId')
 		
@@ -480,7 +484,7 @@ if [[ "$netStatus" ]]; then
 		currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				
 		starttime=$(($currenttime - $meoTime))
 	else
-		echo "Unable to retrive, trying v2"
+		echo -n "Unable to retrive, trying v2"
 		ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 		ip=${ip%/*}	
 		url="https://meowifi.meo.pt/wifim-scl/service/session-status"
@@ -490,8 +494,14 @@ if [[ "$netStatus" ]]; then
 		sessionId=$(curl -s -X POST -H "Content-Type: application/json" -d "$body" "$url")
 		sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
 		meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
-		meoTime="${meoTime:11:8}"
-		starttime=$(date -d "1970-01-01 $meoTime Z" +%s)
+		if [ "$meoTime" != "null" ]; then
+			meoTime="${meoTime:11:8}"
+			echo ": $meoTime"
+			starttime=$(date -d "1970-01-01 $meoTime Z" +%s)
+		else
+			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
+			echo ". Fail..."
+		fi
 	fi
 else
 	echo "Disconnected."

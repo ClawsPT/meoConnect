@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.403'
+version='0.406'
 
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
 
@@ -222,10 +222,13 @@ connectMeoWiFiv2 () {
 
 	# Send a POST request and parse the session ID from the JSON response
 	sessionId=$(curl -s -X POST -H "Content-Type: application/json" -d "$body" "$url")
-	echo $sessionId
+	# Get start time
+	sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
+	meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
+	meoTime="${meoTime:11:8}"
+	starttime=$(date -d "1970-01-01 $meoTime Z" +%s)
+	
 	sessionId=$(echo $sessionId | jq -r '.sessionId')
-	echo $sessionId
-
 		
 	if [ $sessionId != 'null' ] ; then
 		# Construct the URL for session login
@@ -235,7 +238,7 @@ connectMeoWiFiv2 () {
 		login_body="{\"userName\":\"$user\",\"password\":\"$passwd\",\"ipAddress\":\"$ip\",\"sessionId\":\"$sessionId\",\"loginType\":\"login\"}"
 
 		# Send a POST request for login
-		response=$(curl -s -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
+		#response=$(curl -s -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
 
 		echo $response
 	else
@@ -477,8 +480,18 @@ if [[ "$netStatus" ]]; then
 		currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				
 		starttime=$(($currenttime - $meoTime))
 	else
-		echo "Unable to retrive"
-		starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
+		echo "Unable to retrive, trying v2"
+		ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+		ip=${ip%/*}	
+		url="https://meowifi.meo.pt/wifim-scl/service/session-status"
+		body="{\"ipAddress\":\"$ip\"}"
+
+		# Send a POST request and parse the session ID from the JSON response
+		sessionId=$(curl -s -X POST -H "Content-Type: application/json" -d "$body" "$url")
+		sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
+		meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
+		meoTime="${meoTime:11:8}"
+		starttime=$(date -d "1970-01-01 $meoTime Z" +%s)
 	fi
 else
 	echo "Disconnected."
@@ -593,21 +606,9 @@ while true ; do
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
 			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"
 			vpnDisconnect
-			echo "Reconnecting MEO WiFi"
-			nmcli device down "$wifiif"
-			skipTime=60
-			skip=""
-			while [ "$skip" != "c" -a "$skipTime" -ge 0 ] ;do 
-				echo -n -e ">>>>>>>> Resuming in $skipTime""s --- C to continue. <<<<<<<<"
-				read -rsn1 -t 1 skip
-				echo -e -n "\r\033[K"
-				if [[ $skip = "" ]]; then
-					skipTime=$(expr $skipTime - 1 )
-				fi
-			done
-			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
+			echo "Trying new login..."
 			connectMeoWiFiv2
-			
+			continue
 		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == '"The service is unavailable."' ] ; then
 			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"
 			sleep 2
@@ -664,6 +665,8 @@ while true ; do
 			
 			
 			echo "------ TESTE -------"
+			
+			
 		elif [[ $skip = "s" ]]; then		
 			echo "-------------------------------------------------------------------------------"		
 			json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")

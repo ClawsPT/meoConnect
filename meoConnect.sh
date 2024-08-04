@@ -1,7 +1,8 @@
 #!/bin/bash
 
-version='0.407'
+version='0.408'
 
+connectionVer='v1'
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
 
 #  meoConnect.sh
@@ -242,7 +243,7 @@ connectMeoWiFiv2 () {
 		login_body="{\"userName\":\"$user\",\"password\":\"$passwd\",\"ipAddress\":\"$ip\",\"sessionId\":\"$sessionId\",\"loginType\":\"login\"}"
 
 		# Send a POST request for login
-		#response=$(curl -s -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
+		response=$(curl -s -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
 
 		echo $response
 	else
@@ -468,7 +469,7 @@ if [[ "$netStatus" ]]; then
 	echo "Connected."
 #	iwconfig wlan1 | grep Access
 	foo=$($onlineCommand)
-	echo -n "Getting Connection Time: "
+	echo -n "Getting Connection Time: -> v1: "
 	meoTime=""
 	json=""	
 	while [[ ! "$meoTime" ]] ;do	 
@@ -483,8 +484,10 @@ if [[ "$netStatus" ]]; then
 		meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
 		currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				
 		starttime=$(($currenttime - $meoTime))
+		connectionVer='v1'
 	else
-		echo -n "Unable to retrive, trying v2"
+		echo "Fail."
+		echo -n "                         -> v2: "
 		ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 		ip=${ip%/*}	
 		url="https://meowifi.meo.pt/wifim-scl/service/session-status"
@@ -496,11 +499,12 @@ if [[ "$netStatus" ]]; then
 		meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
 		if [ "$meoTime" != "null" ]; then
 			meoTime="${meoTime:11:8}"
-			echo ": $meoTime"
+			echo "$meoTime"
 			starttime=$(date -d "1970-01-01 $meoTime Z" +%s)
+			connectionVer='v2'
 		else
 			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
-			echo ". Fail..."
+			echo "Fail."
 		fi
 	fi
 else
@@ -566,7 +570,7 @@ while true ; do
 		IN=$(vnstat $wifiif -d | (tail -n3))
 		INR=${IN//estimated}
 		arrOUT=(${INR//|/ })
-		echo -n " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")|U/D ${arrOUT[5]} ${arrOUT[6]}"
+		echo -n " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")|U/D ${arrOUT[5]} ${arrOUT[6]}"
 		echo -n "|$serverName $serverLoad|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
 		echo -e $netStatus	
 	else
@@ -586,6 +590,7 @@ while true ; do
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
 			echo "Successfully connected to MEO WiFi"
 			echo -n "Cheking connection time: "
+			connectionVer='v1'
 			meoTime=""	
 			while [[ ! "$meoTime" ]] ;do	 
 				json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
@@ -618,6 +623,7 @@ while true ; do
 			vpnDisconnect
 			echo "Trying new login..."
 			connectMeoWiFiv2
+			connectionVer='v2'
 			continue
 		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == '"The service is unavailable."' ] ; then
 			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"

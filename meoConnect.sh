@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.408'
+version='0.413'
 
 connectionVer='v1'
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -419,8 +419,8 @@ echo "--------------------------------------------------------------------------
 echo "|                         MEO Wifi AutoConnect v$version                         |"
 echo "-------------------------------------------------------------------------------"
 
-echo "Loading Configuration($confFile): Done."
 source $confFile
+echo "Loading Configuration($confFile): Done."
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 echo -n "Checking Dependencies  : "
@@ -570,6 +570,8 @@ while true ; do
 		IN=$(vnstat $wifiif -d | (tail -n3))
 		INR=${IN//estimated}
 		arrOUT=(${INR//|/ })
+		
+	#Echo status line
 		echo -n " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")|U/D ${arrOUT[5]} ${arrOUT[6]}"
 		echo -n "|$serverName $serverLoad|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
 		echo -e $netStatus	
@@ -610,7 +612,7 @@ while true ; do
 			fi
 			sleep 2
 		
-#Start VPN 			
+		#Start VPN 			
 			if $vpn ; then
 				echo -n "Connecting to ProtonVPN: "
 				vpnConnect
@@ -626,16 +628,22 @@ while true ; do
 			connectionVer='v2'
 			continue
 		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == '"The service is unavailable."' ] ; then
-			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"
-			sleep 2
+			echo -e "Someting went wrong, retrying in 5s...\nError code: $connect"
+			sleep 5
 			continue
 		else
 			echo -e "Someting went wrong, retrying ...\nError code: $connect"
-#Stoping ProtonVPN and reconnecting wifi
+		#Stoping ProtonVPN and reconnecting wifi
 			vpnDisconnect
-			echo "Reconnecting MEO WiFi"
+			echo -n "Reconnecting MEO WiFi"
+			echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
+			sleep 2
+			echo -n "."
+			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+			echo -n "."
 			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
-			sleep 5			
+			sleep 5
+			echo "."			
 			continue
 		fi
 		echo "-------------------------------------------------------------------------------"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.413'
+version='0.414'
 
 connectionVer='v1'
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -245,7 +245,7 @@ connectMeoWiFiv2 () {
 		# Send a POST request for login
 		response=$(curl -s -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
 
-		echo $response
+		echo "Connected using v2 - $response"
 	else
 		echo "NO Session Id Found..."
 	fi
@@ -621,9 +621,9 @@ while true ; do
 			foo=$($onlineCommand)	
 					
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
-			echo -e "Someting went wrong, retrying in 60s...\nError code: $connect"
-			vpnDisconnect
+			echo -e "Someting went wrong. \nError code: $connect"
 			echo "Trying new login..."
+			vpnDisconnect
 			connectMeoWiFiv2
 			connectionVer='v2'
 			continue

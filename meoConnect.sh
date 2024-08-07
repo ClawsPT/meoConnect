@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.414'
+version='0.415'
 
 connectionVer='v1'
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -222,7 +222,7 @@ connectMeoWiFiv2 () {
 	body="{\"ipAddress\":\"$ip\"}"
 
 	# Send a POST request and parse the session ID from the JSON response
-	sessionId=$(curl -s -X POST -H "Content-Type: application/json" -d "$body" "$url")
+	sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
 	# Get start time
 	sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
 	meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
@@ -243,7 +243,7 @@ connectMeoWiFiv2 () {
 		login_body="{\"userName\":\"$user\",\"password\":\"$passwd\",\"ipAddress\":\"$ip\",\"sessionId\":\"$sessionId\",\"loginType\":\"login\"}"
 
 		# Send a POST request for login
-		response=$(curl -s -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
+		response=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
 
 		echo "Connected using v2 - $response"
 	else
@@ -473,7 +473,7 @@ if [[ "$netStatus" ]]; then
 	meoTime=""
 	json=""	
 	while [[ ! "$meoTime" ]] ;do	 
-		json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
+		json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
 		json=$(echo $json | jq '.Consumption')
 		meoTime=$(echo $json | jq -r '.Time')
 	done
@@ -494,7 +494,7 @@ if [[ "$netStatus" ]]; then
 		body="{\"ipAddress\":\"$ip\"}"
 
 		# Send a POST request and parse the session ID from the JSON response
-		sessionId=$(curl -s -X POST -H "Content-Type: application/json" -d "$body" "$url")
+		sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
 		sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
 		meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
 		if [ "$meoTime" != "null" ]; then
@@ -595,7 +595,7 @@ while true ; do
 			connectionVer='v1'
 			meoTime=""	
 			while [[ ! "$meoTime" ]] ;do	 
-				json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
+				json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
 				json=$(echo $json | jq '.Consumption')
 				meoTime=$(echo $json | jq -r '.Time')
 			done
@@ -637,8 +637,8 @@ while true ; do
 			vpnDisconnect
 			echo -n "Reconnecting MEO WiFi"
 			echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-			sleep 2
 			echo -n "."
+			sleep 2
 			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 			echo -n "."
 			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
@@ -693,7 +693,7 @@ while true ; do
 			
 		elif [[ $skip = "s" ]]; then		
 			echo "-------------------------------------------------------------------------------"		
-			json=$(curl --interface $wifiif $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
+			json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
 			echo "Corrent connection:"
 			json=$(echo $json | jq '.Consumption')
 			echo "DownstreamMB: $(echo $json | jq '.DownstreamMB')"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.415'
+version='0.416'
 
 connectionVer='v1'
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -466,9 +466,7 @@ if [[ $(echo $netStatus | grep "Moved") ]]; then #Moved -> redirected to login p
 fi
 	
 if [[ "$netStatus" ]]; then
-	echo "Connected."
-#	iwconfig wlan1 | grep Access
-	foo=$($onlineCommand)
+	echo "Connected to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 	echo -n "Getting Connection Time: -> v1: "
 	meoTime=""
 	json=""	
@@ -495,6 +493,7 @@ if [[ "$netStatus" ]]; then
 
 		# Send a POST request and parse the session ID from the JSON response
 		sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
+		#echo $sessionId
 		sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
 		meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
 		if [ "$meoTime" != "null" ]; then
@@ -507,6 +506,7 @@ if [[ "$netStatus" ]]; then
 			echo "Fail."
 		fi
 	fi
+	$onlineCommand> /dev/null 2>&1 &
 else
 	echo "Disconnected."
 	starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
@@ -618,7 +618,7 @@ while true ; do
 				vpnConnect
 			fi
 			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
-			foo=$($onlineCommand)	
+			$onlineCommand> /dev/null 2>&1 &	
 					
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
 			echo -e "Someting went wrong. \nError code: $connect"
@@ -635,15 +635,15 @@ while true ; do
 			echo -e "Someting went wrong, retrying ...\nError code: $connect"
 		#Stoping ProtonVPN and reconnecting wifi
 			vpnDisconnect
-			echo -n "Reconnecting MEO WiFi"
+			echo -n "Disconecting $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 			echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
 			echo -n "."
 			sleep 2
 			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-			echo -n "."
-			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null
+			echo "."
+			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 			sleep 5
-			echo "."			
+			echo "Connected to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"			
 			continue
 		fi
 		echo "-------------------------------------------------------------------------------"
@@ -683,11 +683,8 @@ while true ; do
 		
 			echo "------ TESTE -------"
 			
-#Meo New Login
-		
-			connectMeoWiFiv2
-			
-			
+			iwconfig wlan1 | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p'
+
 			echo "------ TESTE -------"
 			
 			

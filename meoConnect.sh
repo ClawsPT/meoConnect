@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.425'
+version='0.431'
 
 connectionVer='v1'
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -529,7 +529,6 @@ while true ; do
 
 	currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 	totaltime=$(($currenttime - $starttime))
-
 #-------------------------------- Check Connection ----------------------------------
 	netStatus=""
 	connRetryTemp=$(expr $connRetry + 1 )
@@ -580,6 +579,7 @@ while true ; do
 		
 	if [ $forceSynctime = 1 ] ; then
 		syncTime
+		totaltime=$(($currenttime - $starttime))
 		forceSynctime=0
 	fi
 		
@@ -624,22 +624,35 @@ while true ; do
 			sleep 5
 			continue
 		else
-			echo -e "Someting went wrong, retrying ...\nError code: $connect"
+			echo -e "Someting went wrong\nError code: $connect"
 		#Stoping ProtonVPN and reconnecting wifi
 			vpnDisconnect
 			echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
-			echo -e -n "Connecting (\033[4;1mC\033[0mancel). "
+		# Get BSSID List		
+			echo $rPasswd | sudo -S nmcli --fields SSID,BSSID device wifi list --rescan auto | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
+			sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
+			sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
+			
 			bssid=""
-			while [ "$skip" != "c" -a "$bssid" = "" ] ;do 
-				echo -n "."
+			while read p; do
+			
 				echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
+				sleep 2
+				echo "Connecting to $p"
+				echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$p"
+				sleep 2
 				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+				sleep 2
 				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+				
 				bssid=$(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')
-				read -rsn1 -t 1 skip
-			done
+				if [[ "$bssid" != "" ]] ; then
+					break
+				fi
+			  
+			done <$HOME/.config/meoConnect/${0##*/}.lst	
 			forceSynctime=1
-			echo -e "\nConnected to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"			
+			echo "Connected to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"			
 			continue
 		fi
 		echo "-------------------------------------------------------------------------------"
@@ -679,7 +692,7 @@ while true ; do
 		
 			echo "------ TESTE -------"
 			
-			forceSynctime=1
+
 
 			echo "------ TESTE -------"
 			

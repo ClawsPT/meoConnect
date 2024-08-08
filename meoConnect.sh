@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.431'
+version='0.432'
 
 connectionVer='v1'
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -619,16 +619,12 @@ while true ; do
 			bssid=""
 			while read p; do
 				echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-				sleep 2
 				echo "Connecting to $p"
 				echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$p"
-				sleep 2
 				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-				sleep 2
 				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 				bssid=$(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')
 				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
-				echo "ip: $ip"
 				if [[ "$ip" != "" ]] ; then
 					break
 				fi

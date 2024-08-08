@@ -578,7 +578,7 @@ while true ; do
 		INR=${IN//estimated}
 		arrOUT=(${INR//|/ })
 		
-	if [ $forceSynctime ] ; then
+	if [ $forceSynctime = 1 ] ; then
 		syncTime
 		forceSynctime=0
 	fi
@@ -646,7 +646,7 @@ while true ; do
 		echo "-------------------------------------------------------------------------------"
 	fi
 
-#Pause script
+# ----------------------------------- Pause script ----------------------------------
 
 	skipTime=$(($recheckTime - ($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime + 1)))
 	skip=""

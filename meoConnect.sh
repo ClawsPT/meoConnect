@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.424'
+version='0.425'
 
 connectionVer='v1'
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -594,7 +594,7 @@ while true ; do
 		echo " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S") - Offline - $(date "+%d-%m-%y - %H:%M:%S")"
 		mpg321 -q $SCRIPT_DIR/alarm.mp3
 		echo "-------------------------------------------------------------------------------"
-				 
+		forceSynctime=1		 
 		vpnDisconnect
 		
 #Login into MEO-WiFi
@@ -602,8 +602,7 @@ while true ; do
 		connect=$(connectMeoWiFiv1)
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
 			echo "Successfully connected to MEO WiFi"
-			syncTime
-			sleep 2
+			continue
 		
 		#Start VPN 			
 			if $vpn ; then

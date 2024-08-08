@@ -627,7 +627,9 @@ while true ; do
 				sleep 2
 				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 				bssid=$(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')
-				if [[ "$bssid" != "" ]] ; then
+				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+				echo "ip: $ip"
+				if [[ "$ip" != "" ]] ; then
 					break
 				fi
 			done <$HOME/.config/meoConnect/${0##*/}.lst	

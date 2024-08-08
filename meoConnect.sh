@@ -1,9 +1,10 @@
 #!/bin/bash
 
-version='0.416'
+version='0.424'
 
 connectionVer='v1'
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
+forceSynctime=0
 
 #  meoConnect.sh
 #  
@@ -245,7 +246,7 @@ connectMeoWiFiv2 () {
 		# Send a POST request for login
 		response=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
 
-		echo "Connected using v2 - $response"
+		echo "Connected using v2"
 	else
 		echo "NO Session Id Found..."
 	fi
@@ -413,6 +414,50 @@ echo $rPasswd | sudo -S cp -f $FILE /etc/resolv.conf  > /dev/null 2>&1
 rm $FILE
 }
 
+syncTime () {
+	
+	echo -n "Getting Connection Time: -> v1: "
+	meoTime=""
+	json=""	
+	while [[ ! "$meoTime" ]] ;do	 
+		json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
+		json=$(echo $json | jq '.Consumption')
+		meoTime=$(echo $json | jq -r '.Time')
+	done
+	
+	if [ "$meoTime" != "null" ]; then
+		meoTime="$meoTime:00"
+		echo "$meoTime"
+		meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
+		currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				
+		starttime=$(($currenttime - $meoTime))
+		connectionVer='v1'
+	else
+		echo "Fail."
+		echo -n "                         -> v2: "
+		ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+		ip=${ip%/*}	
+		url="https://meowifi.meo.pt/wifim-scl/service/session-status"
+		body="{\"ipAddress\":\"$ip\"}"
+
+		# Send a POST request and parse the session ID from the JSON response
+		sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
+		#echo $sessionId
+		sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
+		meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
+		if [ "$meoTime" != "null" ]; then
+			meoTime="${meoTime:11:8}"
+			echo "$meoTime"
+			starttime=$(date -d "1970-01-01 $meoTime Z" +%s)
+			connectionVer='v2'
+		else
+			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
+			echo "Fail."
+		fi
+	fi
+	}
+
+
 clear
 
 echo "-------------------------------------------------------------------------------"
@@ -467,45 +512,7 @@ fi
 	
 if [[ "$netStatus" ]]; then
 	echo "Connected to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
-	echo -n "Getting Connection Time: -> v1: "
-	meoTime=""
-	json=""	
-	while [[ ! "$meoTime" ]] ;do	 
-		json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
-		json=$(echo $json | jq '.Consumption')
-		meoTime=$(echo $json | jq -r '.Time')
-	done
-	
-	if [ "$meoTime" != "null" ]; then
-		meoTime="$meoTime:00"
-		echo "$meoTime"
-		meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
-		currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				
-		starttime=$(($currenttime - $meoTime))
-		connectionVer='v1'
-	else
-		echo "Fail."
-		echo -n "                         -> v2: "
-		ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
-		ip=${ip%/*}	
-		url="https://meowifi.meo.pt/wifim-scl/service/session-status"
-		body="{\"ipAddress\":\"$ip\"}"
-
-		# Send a POST request and parse the session ID from the JSON response
-		sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
-		#echo $sessionId
-		sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
-		meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
-		if [ "$meoTime" != "null" ]; then
-			meoTime="${meoTime:11:8}"
-			echo "$meoTime"
-			starttime=$(date -d "1970-01-01 $meoTime Z" +%s)
-			connectionVer='v2'
-		else
-			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
-			echo "Fail."
-		fi
-	fi
+	syncTime
 	$onlineCommand> /dev/null 2>&1 &
 else
 	echo "Disconnected."
@@ -571,6 +578,11 @@ while true ; do
 		INR=${IN//estimated}
 		arrOUT=(${INR//|/ })
 		
+	if [ $forceSynctime ] ; then
+		syncTime
+		forceSynctime=0
+	fi
+		
 	#Echo status line
 		echo -n " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")|U/D ${arrOUT[5]} ${arrOUT[6]}"
 		echo -n "|$serverName $serverLoad|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
@@ -587,29 +599,10 @@ while true ; do
 		
 #Login into MEO-WiFi
 		echo "Login to MEO WiFi...."
-		sleep 5
 		connect=$(connectMeoWiFiv1)
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
 			echo "Successfully connected to MEO WiFi"
-			echo -n "Cheking connection time: "
-			connectionVer='v1'
-			meoTime=""	
-			while [[ ! "$meoTime" ]] ;do	 
-				json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
-				json=$(echo $json | jq '.Consumption')
-				meoTime=$(echo $json | jq -r '.Time')
-			done
-			
-			if [ "$meoTime" != "null" ]; then
-				meoTime="$meoTime:00"
-				echo "$meoTime"
-				meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
-				currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				
-				starttime=$(($currenttime - $meoTime))
-			else
-				echo "Unable to retrive"
-				starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
-			fi
+			syncTime
 			sleep 2
 		
 		#Start VPN 			
@@ -622,7 +615,7 @@ while true ; do
 					
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
 			echo -e "Someting went wrong. \nError code: $connect"
-			echo "Trying new login..."
+			echo "Trying v2 login..."
 			vpnDisconnect
 			connectMeoWiFiv2
 			connectionVer='v2'
@@ -635,15 +628,19 @@ while true ; do
 			echo -e "Someting went wrong, retrying ...\nError code: $connect"
 		#Stoping ProtonVPN and reconnecting wifi
 			vpnDisconnect
-			echo -n "Disconecting $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
-			echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-			echo -n "."
-			sleep 2
-			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-			echo "."
-			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
-			sleep 5
-			echo "Connected to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"			
+			echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
+			echo -e -n "Connecting (\033[4;1mC\033[0mancel). "
+			bssid=""
+			while [ "$skip" != "c" -a "$bssid" = "" ] ;do 
+				echo -n "."
+				echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
+				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+				bssid=$(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')
+				read -rsn1 -t 1 skip
+			done
+			forceSynctime=1
+			echo -e "\nConnected to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"			
 			continue
 		fi
 		echo "-------------------------------------------------------------------------------"
@@ -683,7 +680,7 @@ while true ; do
 		
 			echo "------ TESTE -------"
 			
-			iwconfig wlan1 | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p'
+			forceSynctime=1
 
 			echo "------ TESTE -------"
 			
@@ -695,19 +692,7 @@ while true ; do
 			json=$(echo $json | jq '.Consumption')
 			echo "DownstreamMB: $(echo $json | jq '.DownstreamMB')"
 			echo "UpstreamMB: $(echo $json | jq '.UpstreamMB')"
-			echo "Time: $(echo $json | jq '.Time')"
-			meoTime=$(echo $json | jq -r '.Time')
-			
-			if [ "$meoTime" != "null" ]; then
-				echo -n "Updating clock: "			
-				meoTime="$meoTime:00"
-				meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
-				currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				
-				starttime=$(($currenttime - $meoTime))
-				echo "Done."
-			else
-				starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
-			fi
+			syncTime
 			echo "-------------------------------------------------------------------------------"		
 		elif [[ $skip = "q" ]]; then
 			exit

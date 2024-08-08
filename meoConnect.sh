@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.432'
+version='0.434'
 
 connectionVer='v1'
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -221,16 +221,6 @@ connectMeoWiFiv2 () {
 
 	# Send a POST request and parse the session ID from the JSON response
 	sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
-	# Get start time
-	sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
-	meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
-	if [ "$meoTime" != "null" ]; then
-		meoTime="${meoTime:11:8}"
-		starttime=$(date -d "1970-01-01 $meoTime Z" +%s)
-	else
-		starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
-	fi
-	
 	sessionId=$(echo $sessionId | jq -r '.sessionId')
 		
 	if [ $sessionId != 'null' ] ; then
@@ -619,18 +609,20 @@ while true ; do
 			bssid=""
 			while read p; do
 				echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-				echo "Connecting to $p"
+				echo -n "Connecting to $p"
 				echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$p"
 				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 				bssid=$(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')
 				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 				if [[ "$ip" != "" ]] ; then
+					echo ": Done."
 					break
+				else
+					echo ": Fail."
 				fi
 			done <$HOME/.config/meoConnect/${0##*/}.lst	
 			forceSynctime=1
-			echo "Connected to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 			continue
 		fi
 		echo "-------------------------------------------------------------------------------"

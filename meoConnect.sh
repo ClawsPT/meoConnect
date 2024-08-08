@@ -29,7 +29,6 @@ forceSynctime=0
 encryptPasswd () {
 
 #Using python to encrypt password
-
 #Using part of ravemir code - https://github.com/ravemir/meo-wifi-login
 	
 PYCMD=$(cat <<EOF
@@ -162,7 +161,7 @@ vpnConnect () {
 	if [[ $(ifconfig | grep "proton") || $(ifconfig | grep "ipv6leakintrf") ]]; then
 		foo=$(timeout --preserve-status -k 5 30 protonvpn-cli d)
 	fi
-	vpnConn=$(timeout --preserve-status -k 5 45 protonvpn-cli connect --cc NL --protocol udp | grep "Successfully connected")  #timeout --preserve-status 20 
+	vpnConn=$(timeout --preserve-status -k 5 45 protonvpn-cli connect --cc NL --protocol udp | grep "Successfully connected")
 	if [[ "$vpnConn" ]]; then
 		serverStatus=$(protonvpn-cli s)
 		serverLoad=$(echo "$serverStatus" | grep "Server Load")
@@ -177,10 +176,10 @@ vpnConnect () {
 }
 
 vpnDisconnect () {
-	
-	echo -n "Disconnecting ProtonVPN: "	
+
+	echo -n "Disconnecting ProtonVPN: "
 	if [[ $(ifconfig | grep proton) ]] ; then
-		vpnDisConn=$(timeout --preserve-status -k 5 30 protonvpn-cli d | grep "Successfully disconnected")  #timeout --preserve-status 20 
+		vpnDisConn=$(timeout --preserve-status -k 5 30 protonvpn-cli d | grep "Successfully disconnected")
 		if [[ "$vpnDisConn" ]]; then
 			echo "Successfully disconnected."
 		else
@@ -189,7 +188,7 @@ vpnDisconnect () {
 	else
 		echo "Not commected."
 	fi
-	
+
 	echo "Resetting DNS"
 	setDNS
 }
@@ -197,16 +196,14 @@ vpnDisconnect () {
 connectMeoWiFiv1 () {
 
 	ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
-	ip=${ip%/*}								
+	ip=${ip%/*}
 	encPwd=$(encryptPasswd)
 	connRetryTemp=$(expr $connRetry + 1 )
-	json=""
-	
+	json=""	
 	while [ "$json" = "" -a "$connRetryTemp" -ge 1 ] ;do
 		json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/Login?username="$user"&password="$encPwd"&navigatorLang=pt")
 		connRetryTemp=$(expr $connRetryTemp - 1 )
 	done
-	
 	error=$(echo $json | jq '.error')
 	if [[ "$error" ]]; then
 		echo "$error"
@@ -237,15 +234,12 @@ connectMeoWiFiv2 () {
 	sessionId=$(echo $sessionId | jq -r '.sessionId')
 		
 	if [ $sessionId != 'null' ] ; then
-		# Construct the URL for session login
+	# Construct the URL for session login
 		url="https://meowifi.meo.pt/wifim-scl/service/${sessionId}/session-login"
-
-		# Construct the login request body
+	# Construct the login request body
 		login_body="{\"userName\":\"$user\",\"password\":\"$passwd\",\"ipAddress\":\"$ip\",\"sessionId\":\"$sessionId\",\"loginType\":\"login\"}"
-
-		# Send a POST request for login
+	# Send a POST request for login
 		response=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
-
 		echo "Connected using v2"
 	else
 		echo "NO Session Id Found..."
@@ -415,7 +409,7 @@ rm $FILE
 }
 
 syncTime () {
-	
+
 	echo -n "Getting Connection Time: -> v1: "
 	meoTime=""
 	json=""	
@@ -424,12 +418,12 @@ syncTime () {
 		json=$(echo $json | jq '.Consumption')
 		meoTime=$(echo $json | jq -r '.Time')
 	done
-	
+
 	if [ "$meoTime" != "null" ]; then
 		meoTime="$meoTime:00"
 		echo "$meoTime"
 		meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
-		currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)				
+		currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 		starttime=$(($currenttime - $meoTime))
 		connectionVer='v1'
 	else
@@ -456,8 +450,6 @@ syncTime () {
 		fi
 	fi
 	}
-
-
 clear
 
 echo "-------------------------------------------------------------------------------"
@@ -505,11 +497,11 @@ fi
 
 echo -n "Checking Connection    : "
 netStatus=""
-netStatus=$(echo $(curl $curlCmd --head  --request GET www.google.com |grep "HTTP/"))	
+netStatus=$(echo $(curl $curlCmd --head  --request GET www.google.com |grep "HTTP/"))
 if [[ $(echo $netStatus | grep "Moved") ]]; then #Moved -> redirected to login portal
 	netStatus=""
 fi
-	
+
 if [[ "$netStatus" ]]; then
 	echo "Connected to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 	syncTime
@@ -522,17 +514,14 @@ echo "--------------------------------------------------------------------------
 echo "$(date "+%Y-%m-%d - %H:%M:%S") - Starting script"
 echo "-------------------------------------------------------------------------------"
 
-
 # -------------------------------- Start Loop ---------------------------------------
 
 while true ; do
-
 	currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 	totaltime=$(($currenttime - $starttime))
 #-------------------------------- Check Connection ----------------------------------
 	netStatus=""
 	connRetryTemp=$(expr $connRetry + 1 )
-	
 	while [ "$netStatus" = "" -a "$connRetryTemp" -ge 1 ] ;do
 		netStatus=$(echo $(curl $curlCmd --head www.google.com |grep "HTTP/"))
 			
@@ -546,7 +535,7 @@ while true ; do
 # ---------------------------------- ONLINE -----------------------------------------
 	
 	if [[ "$netStatus" ]]; then
-#Get ProtonVPN server stats
+	#Get ProtonVPN server stats
 		if $vpn  ; then
 			serverStatus=$(protonvpn-cli s)
 			serverLoad=$(echo "$serverStatus" | grep "Server Load")
@@ -555,7 +544,7 @@ while true ; do
 			serverName=${serverName:10}
 			if [[ ! "$serverLoad" ]]; then
 				if $vpn  ; then
-					echo -n "ProtonVPN is disconnected, reconnecting: "	
+					echo -n "ProtonVPN is disconnected, reconnecting: "
 					vpnConnect
 				else
 					serverLoad="Offline"
@@ -570,23 +559,21 @@ while true ; do
 			serverName="VPN"
 			serverLoad="Offline"
 		fi
-		
 	#Get traffic and cpu
 		cpuuse=$(cat <(grep 'cpu ' /proc/stat) <(sleep 1 && grep 'cpu ' /proc/stat) | awk -v RS="" '{printf "%3.0f%\n", ($13-$2+$15-$4)*100/($13-$2+$15-$4+$16-$5)}')
 		IN=$(vnstat $wifiif -d | (tail -n3))
 		INR=${IN//estimated}
 		arrOUT=(${INR//|/ })
-		
-	if [ $forceSynctime = 1 ] ; then
-		syncTime
-		totaltime=$(($currenttime - $starttime))
-		forceSynctime=0
-	fi
-		
-	#Echo status line
+	#Get time from server.
+		if [ $forceSynctime = 1 ] ; then
+			syncTime
+			totaltime=$(($currenttime - $starttime))
+			forceSynctime=0
+		fi
+	#Echo status line.
 		echo -n " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")|U/D ${arrOUT[5]} ${arrOUT[6]}"
 		echo -n "|$serverName $serverLoad|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
-		echo -e $netStatus	
+		echo -e $netStatus
 	else
 
 # -------------------------------------- OFFLINE ------------------------------------
@@ -594,24 +581,22 @@ while true ; do
 		echo " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S") - Offline - $(date "+%d-%m-%y - %H:%M:%S")"
 		mpg321 -q $SCRIPT_DIR/alarm.mp3
 		echo "-------------------------------------------------------------------------------"
-		forceSynctime=1		 
+		forceSynctime=1
 		vpnDisconnect
-		
-#Login into MEO-WiFi
+
+	#Login into MEO-WiFi
 		echo "Login to MEO WiFi...."
 		connect=$(connectMeoWiFiv1)
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
 			echo "Successfully connected to MEO WiFi"
 			continue
-		
-		#Start VPN 			
+		#Start VPN
 			if $vpn ; then
 				echo -n "Connecting to ProtonVPN: "
 				vpnConnect
 			fi
 			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
-			$onlineCommand> /dev/null 2>&1 &	
-					
+			$onlineCommand> /dev/null 2>&1 &					
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
 			echo -e "Someting went wrong. \nError code: $connect"
 			echo "Trying v2 login..."
@@ -625,17 +610,14 @@ while true ; do
 			continue
 		else
 			echo -e "Someting went wrong\nError code: $connect"
-		#Stoping ProtonVPN and reconnecting wifi
-			vpnDisconnect
 			echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
-		# Get BSSID List		
+		# Get BSSID List.		
 			echo $rPasswd | sudo -S nmcli --fields SSID,BSSID device wifi list --rescan auto | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
-			
+		# Connecting to BSSID list.	
 			bssid=""
 			while read p; do
-			
 				echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
 				sleep 2
 				echo "Connecting to $p"
@@ -644,15 +626,13 @@ while true ; do
 				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 				sleep 2
 				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
-				
 				bssid=$(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')
 				if [[ "$bssid" != "" ]] ; then
 					break
 				fi
-			  
 			done <$HOME/.config/meoConnect/${0##*/}.lst	
 			forceSynctime=1
-			echo "Connected to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"			
+			echo "Connected to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 			continue
 		fi
 		echo "-------------------------------------------------------------------------------"
@@ -686,33 +666,33 @@ while true ; do
 			$( nohup $editor $(dirname "$0")/meoConnect.sh $confFile> /dev/null 2>&1 & )
 		elif [[ $skip = "c" ]]; then
 			editSettings
-		
-#Teste
+# -------------------------------------- TESTE --------------------------------------
 		elif [[ $skip = "t" ]]; then
-		
 			echo "------ TESTE -------"
 			
 
 
+
+
+
 			echo "------ TESTE -------"
-			
-			
-		elif [[ $skip = "s" ]]; then		
-			echo "-------------------------------------------------------------------------------"		
+# -------------------------------------- TESTE --------------------------------------
+		elif [[ $skip = "s" ]]; then
+			echo "-------------------------------------------------------------------------------"
 			json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
 			echo "Corrent connection:"
 			json=$(echo $json | jq '.Consumption')
 			echo "DownstreamMB: $(echo $json | jq '.DownstreamMB')"
 			echo "UpstreamMB: $(echo $json | jq '.UpstreamMB')"
 			syncTime
-			echo "-------------------------------------------------------------------------------"		
+			echo "-------------------------------------------------------------------------------"
 		elif [[ $skip = "q" ]]; then
 			exit
 		elif [[ $skip = "r" ]]; then
 			echo "Reloading script"
 			sleep 1
 			mpg321 -q $SCRIPT_DIR/alarm.mp3
-			exec meoConnect.sh 
+			exec meoConnect.sh
 			exit
 		fi	
 	done

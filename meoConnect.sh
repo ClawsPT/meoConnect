@@ -431,8 +431,10 @@ syncTime () {
 		meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
 		if [ "$meoTime" != "null" ]; then
 			meoTime="${meoTime:11:8}"
-			echo "$meoTime"
 			starttime=$(date -d "1970-01-01 $meoTime Z" +%s)
+			currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
+			totaltime=$(($currenttime - $starttime))
+			echo $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")
 			connectionVer='v2'
 		else
 			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)

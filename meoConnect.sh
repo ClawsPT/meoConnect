@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.434'
+version='0.435'
 
 connectionVer='v1'
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -208,7 +208,7 @@ connectMeoWiFiv1 () {
 	if [[ "$error" ]]; then
 		echo "$error"
 	else
-		echo "Connection timeout. ($connRetryTemp) $json"
+		echo "Connection timeout. $json"
 	fi
 }
 
@@ -440,6 +440,7 @@ syncTime () {
 		fi
 	fi
 	}
+
 clear
 
 echo "-------------------------------------------------------------------------------"
@@ -600,11 +601,12 @@ while true ; do
 			continue
 		else
 			echo -e "Someting went wrong\nError code: $connect"
-			echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 		# Get BSSID List.		
-			echo $rPasswd | sudo -S nmcli --fields SSID,BSSID device wifi list --rescan auto | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
+			echo "Scanning WiFi networks..." 
+			echo $rPasswd | sudo -S nmcli --fields SSID,BSSID device wifi list ifname $wifiif --rescan auto | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
+			echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
 		# Connecting to BSSID list.	
 			bssid=""
 			while read p; do

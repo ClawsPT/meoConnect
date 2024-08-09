@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.436'
+version='0.437'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -587,7 +587,6 @@ while true ; do
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
 			echo -e "Someting went wrong. \nError code: $connect"
 			echo "Trying v2 login..."
-			vpnDisconnect
 			connectMeoWiFiv2
 			connectionVer='v2'
 			continue
@@ -597,7 +596,8 @@ while true ; do
 			continue
 		else
 			echo -e "Someting went wrong\nError code: $connect"
-		# Get BSSID List.		
+		# Get BSSID List.
+			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 			echo "Scanning WiFi networks..." 
 			echo $rPasswd | sudo -S nmcli --fields SSID,BSSID device wifi list ifname $wifiif --rescan auto | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
@@ -611,7 +611,6 @@ while true ; do
 				echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$p"
 				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
-				bssid=$(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')
 				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 				if [[ "$ip" != "" ]] ; then
 					echo ": Done."
@@ -631,8 +630,9 @@ while true ; do
 	skipTime=$(($recheckTime - ($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime + 1)))
 	skip=""
 	
-	while [ "$skip" != "f" -a "$skipTime" -ge 0 ] ;do 
-		echo -n -e ">>>>>>>> T-$skipTime""s , \033[4;1mF\033[0morce , \033[4;1mV\033[0mPN , \033[4;1mE\033[0mdit , \033[4;1mC\033[0monfig , \033[4;1mS\033[0mtatus , \033[4;1mR\033[0meload , \033[4;1mQ\033[0muit <<<<<<<<"
+	while [ "$skip" != "f" -a "$skipTime" -ge 0 ] ;do
+		linkQuality=$(iwconfig wlan1 | awk -F= '/Quality/ {print $2}' | awk -F/ '{print $1}')
+		echo -n -e ">>>> T-$skipTime""s , S:$linkQuality% , \033[4;1mF\033[0morce , \033[4;1mV\033[0mPN , \033[4;1mE\033[0mdit , \033[4;1mC\033[0monfig , \033[4;1mS\033[0mtatus , \033[4;1mR\033[0meload , \033[4;1mQ\033[0muit <<<<"
 		read -rsn1 -t 1 skip
 		echo -e -n "\r\033[K"
 		
@@ -659,7 +659,7 @@ while true ; do
 			echo "------ TESTE -------"
 			
 
-
+			echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
 
 
 

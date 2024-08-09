@@ -1,8 +1,8 @@
 #!/bin/bash
 
-version='0.435'
+version='0.436'
 
-connectionVer='v1'
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
 forceSynctime=0
 
@@ -408,7 +408,6 @@ syncTime () {
 		json=$(echo $json | jq '.Consumption')
 		meoTime=$(echo $json | jq -r '.Time')
 	done
-
 	if [ "$meoTime" != "null" ]; then
 		meoTime="$meoTime:00"
 		echo "$meoTime"
@@ -448,23 +447,19 @@ clear
 echo "-------------------------------------------------------------------------------"
 echo "|                         MEO Wifi AutoConnect v$version                         |"
 echo "-------------------------------------------------------------------------------"
-
-source $confFile
-echo "Loading Configuration($confFile): Done."
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-
-echo -n "Checking Dependencies  : "
-for name in protonvpn-cli geany mpg321 vnstat curl jq awk notify-send
-	do
-	  [[ $(which $name 2>/dev/null) ]] || { echo -en "\n$name needs to be installed. Use 'sudo apt-get install $name'";deps=1; }
-	done
-	[[ $deps -ne 1 ]] && echo "Done." || { echo -en "\nInstall the above and rerun this script\n";exit 1; }
-
 if [ ! -f $confFile ]; then
     echo "Configuration File not found..."
     editSettings
 	exit
 fi
+source $confFile
+echo "Loading Configuration($confFile): Done."
+echo -n "Checking Dependencies  : "
+for name in protonvpn-cli geany mpg321 vnstat curl jq awk notify-send
+	do
+	  [[ $(which $name 2>/dev/null) ]] || { echo -en "\n$name needs to be installed. Use 'sudo apt-get install $name'";deps=1; }
+	done
+[[ $deps -ne 1 ]] && echo "Done." || { echo -en "\nInstall the above and rerun this script\n";exit 1; }
 
 echo -n "Checking User  "
 rTest=$(echo $rPasswd | su $(whoami) -c 'echo "Done."')
@@ -576,7 +571,6 @@ while true ; do
 		echo "-------------------------------------------------------------------------------"
 		forceSynctime=1
 		vpnDisconnect
-
 	#Login into MEO-WiFi
 		echo "Login to MEO WiFi...."
 		connect=$(connectMeoWiFiv1)

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.437'
+version='0.439'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -415,6 +415,9 @@ syncTime () {
 		currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 		starttime=$(($currenttime - $meoTime))
 		connectionVer='v1'
+		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
+		$onlineCommand> /dev/null 2>&1 &
+		echo "-------------------------------------------------------------------------------"
 	else
 		echo "Fail."
 		echo -n "                         -> v2: "
@@ -435,9 +438,13 @@ syncTime () {
 			totaltime=$(($currenttime - $starttime))
 			echo $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")
 			connectionVer='v2'
+			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
+			$onlineCommand> /dev/null 2>&1 &
+			echo "-------------------------------------------------------------------------------"
 		else
 			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 			echo "Fail."
+			echo "-------------------------------------------------------------------------------"
 		fi
 	fi
 	}
@@ -493,12 +500,10 @@ fi
 if [[ "$netStatus" ]]; then
 	echo "Connected to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 	syncTime
-	$onlineCommand> /dev/null 2>&1 &
 else
 	echo "Disconnected."
 	starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 fi
-echo "-------------------------------------------------------------------------------"
 echo "$(date "+%Y-%m-%d - %H:%M:%S") - Starting script"
 echo "-------------------------------------------------------------------------------"
 
@@ -581,9 +586,7 @@ while true ; do
 			if $vpn ; then
 				echo -n "Connecting to ProtonVPN: "
 				vpnConnect
-			fi
-			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
-			$onlineCommand> /dev/null 2>&1 &					
+			fi					
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
 			echo -e "Someting went wrong. \nError code: $connect"
 			echo "Trying v2 login..."
@@ -599,7 +602,7 @@ while true ; do
 		# Get BSSID List.
 			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 			echo "Scanning WiFi networks..." 
-			echo $rPasswd | sudo -S nmcli --fields SSID,BSSID device wifi list ifname $wifiif --rescan auto | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
+			echo $rPasswd | sudo -S nmcli --fields SSID,BSSID device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
 			echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
@@ -607,16 +610,16 @@ while true ; do
 			bssid=""
 			while read p; do
 				echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-				echo -n "Connecting to $p"
+				echo -n "Connecting to $p: "
 				echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$p"
 				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 				if [[ "$ip" != "" ]] ; then
-					echo ": Done."
+					echo "Done."
 					break
 				else
-					echo ": Fail."
+					echo "Fail."
 				fi
 			done <$HOME/.config/meoConnect/${0##*/}.lst	
 			forceSynctime=1
@@ -668,10 +671,10 @@ while true ; do
 		elif [[ $skip = "s" ]]; then
 			echo "-------------------------------------------------------------------------------"
 			json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
-			echo "Corrent connection:"
-			json=$(echo $json | jq '.Consumption')
-			echo "DownstreamMB: $(echo $json | jq '.DownstreamMB')"
-			echo "UpstreamMB: $(echo $json | jq '.UpstreamMB')"
+			echo "Corrent connection: $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
+			json=$(echo $json | jq -r '.Consumption')
+			echo "DownstreamMB: $(echo $json | jq -r '.DownstreamMB')"
+			echo "UpstreamMB: $(echo $json | jq -r '.UpstreamMB')"
 			syncTime
 			echo "-------------------------------------------------------------------------------"
 		elif [[ $skip = "q" ]]; then

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.443'
+version='0.445'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -489,7 +489,9 @@ if [ ! $rPasswd ] ; then
 	fi
 	saveSettings
 fi
-
+echo -n "Setting DNS server     : "
+setDNS
+echo "Done."
 echo -n "Checking Connection    : "
 netStatus=""
 netStatus=$(echo $(curl $curlCmd --head  --request GET www.google.com |grep "HTTP/"))
@@ -527,8 +529,8 @@ while true ; do
 	netStatus=""
 	connRetryTemp=$(expr $connRetry + 1 )
 	while [ "$netStatus" = "" -a "$connRetryTemp" -ge 1 ] ;do
-		netStatus=$(echo $(curl $curlCmd --head www.google.com |grep "HTTP/"))
-			
+		netStatus=$(echo $(curl $curlCmd --head www.google.com | grep "HTTP/"))
+		netStatus=$(printf "$netStatus" | sed 's/\r//g' | sed 's/HTTP\/1.1 //g')
 		if [[ $(echo $netStatus | grep "Moved") ]]; then #Moved -> redirected to login portal
 			echo "Redirected to login portal - $netStatus"
 			netStatus=""
@@ -574,10 +576,10 @@ while true ; do
 			totaltime=$(($currenttime - $starttime))
 			forceSynctime=0
 		fi
-	#Echo status line. #|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))
-		echo -n " $connectionVer|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")|U/D ${arrOUT[5]} ${arrOUT[6]}"
+	#Echo status line.
+		echo -n " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")|U/D ${arrOUT[5]} ${arrOUT[6]}"
 		echo -n "|$serverName $serverLoad|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
-		echo -e $netStatus
+		echo $netStatus	
 	else
 
 # -------------------------------------- OFFLINE ------------------------------------

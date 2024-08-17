@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.440'
+version='0.443'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -499,6 +499,17 @@ fi
 
 if [[ "$netStatus" ]]; then
 	echo "Connected to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
+	if [[ $(ifconfig | grep proton) ]] ; then
+		
+		if $vpn ; then
+			echo "Checking ProtonVPN     : Connected."
+		else
+			echo "Checking ProtonVPN     : Wrong state, Disconecting."
+			vpnDisconnect
+		fi	
+	else
+		echo "Checking ProtonVPN     : Disconnected."
+	fi
 	syncTime
 else
 	echo "Disconnected."
@@ -563,8 +574,8 @@ while true ; do
 			totaltime=$(($currenttime - $starttime))
 			forceSynctime=0
 		fi
-	#Echo status line.
-		echo -n " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")|U/D ${arrOUT[5]} ${arrOUT[6]}"
+	#Echo status line. #|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))
+		echo -n " $connectionVer|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")|U/D ${arrOUT[5]} ${arrOUT[6]}"
 		echo -n "|$serverName $serverLoad|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
 		echo -e $netStatus
 	else
@@ -676,7 +687,6 @@ while true ; do
 			echo "DownstreamMB: $(echo $json | jq -r '.DownstreamMB')"
 			echo "UpstreamMB: $(echo $json | jq -r '.UpstreamMB')"
 			syncTime
-			echo "-------------------------------------------------------------------------------"
 		elif [[ $skip = "q" ]]; then
 			exit
 		elif [[ $skip = "r" ]]; then

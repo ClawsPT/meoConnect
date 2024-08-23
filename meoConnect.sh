@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.445'
+version='0.446'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -556,7 +556,7 @@ while true ; do
 					serverLoad="Offline"
 				fi
 			elif [ $serverLoad -gt $vpnMload ]; then
-				echo -n "VPN Load over 75% ($serverLoad%), connecting to new server: "
+				echo -n "VPN Load over $vpnMload % ($serverLoad%), connecting to new server: "
 				vpnConnect
 			else
 				serverLoad="$serverLoad%"
@@ -593,7 +593,7 @@ while true ; do
 		echo "Login to MEO WiFi...."
 		connect=$(connectMeoWiFiv1)
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
-			echo "Successfully connected to MEO WiFi"
+			echo "Successfully connected to MEO WiFi: $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
 			continue
 		#Start VPN
 			if $vpn ; then

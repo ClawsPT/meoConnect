@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.449'
+version='0.450'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -554,13 +554,16 @@ while true ; do
 				if $vpn  ; then
 					echo -n "ProtonVPN is disconnected, reconnecting: "
 					vpnConnect
+					echo "-------------------------------------------------------------------------------"
 					remLine=false
 				else
 					serverLoad="Offline"
 				fi
 			elif [ $serverLoad -gt $vpnMload ]; then
+				echo "-------------------------------------------------------------------------------"
 				echo -n "VPN Load over $vpnMload % ($serverLoad%), connecting to new server: "
 				vpnConnect
+				echo "-------------------------------------------------------------------------------"
 				remLine=false
 			else
 				serverLoad="$serverLoad%"
@@ -671,6 +674,7 @@ while true ; do
 		if [[ $skip = "" ]]; then
 			skipTime=$(expr $skipTime - 1 )
 		elif [[ $skip = "v" ]]; then
+			echo "-------------------------------------------------------------------------------"
 			if ! $vpn ; then
 				echo -n "Connecing to ProtonVPN: "
 				vpnConnect
@@ -681,9 +685,13 @@ while true ; do
 				vpn=false
 				skip="f"
 			fi
+			remLine=false
+			echo "-------------------------------------------------------------------------------"
 		elif [[ $skip = "e" ]]; then
+			echo "-------------------------------------------------------------------------------"
 			echo "Running script editor..."
 			$( nohup $editor $(dirname "$0")/meoConnect.sh $confFile> /dev/null 2>&1 & )
+			echo "-------------------------------------------------------------------------------"
 		elif [[ $skip = "c" ]]; then
 			editSettings
 # -------------------------------------- TESTE --------------------------------------

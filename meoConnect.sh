@@ -1,10 +1,11 @@
 #!/bin/bash
 
-version='0.446'
+version='0.447'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
 forceSynctime=0
+remLine=false
 
 #  meoConnect.sh
 #  
@@ -518,7 +519,7 @@ else
 	starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 fi
 echo "$(date "+%Y-%m-%d - %H:%M:%S") - Starting script"
-echo "-------------------------------------------------------------------------------"
+echo -e "-------------------------------------------------------------------------------"
 
 # -------------------------------- Start Loop ---------------------------------------
 
@@ -533,6 +534,7 @@ while true ; do
 		netStatus=$(printf "$netStatus" | sed 's/\r//g' | sed 's/HTTP\/1.1 //g')
 		if [[ $(echo $netStatus | grep "Moved") ]]; then #Moved -> redirected to login portal
 			echo "Redirected to login portal - $netStatus"
+			remLine=false
 			netStatus=""
 			connRetryTemp=0
 		fi
@@ -552,12 +554,14 @@ while true ; do
 				if $vpn  ; then
 					echo -n "ProtonVPN is disconnected, reconnecting: "
 					vpnConnect
+					remLine=false
 				else
 					serverLoad="Offline"
 				fi
 			elif [ $serverLoad -gt $vpnMload ]; then
 				echo -n "VPN Load over $vpnMload % ($serverLoad%), connecting to new server: "
 				vpnConnect
+				remLine=false
 			else
 				serverLoad="$serverLoad%"
 			fi
@@ -577,6 +581,12 @@ while true ; do
 			forceSynctime=0
 		fi
 	#Echo status line.
+		if [ "$netStatus" != "200 OK" ] ; then
+			remLine=true
+		fi
+		if [ "$remLine" == "true" ] ; then
+			echo -ne '\e[1A\e[K'
+		fi
 		echo -n " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")|U/D ${arrOUT[5]} ${arrOUT[6]}"
 		echo -n "|$serverName $serverLoad|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
 		echo $netStatus	
@@ -594,21 +604,25 @@ while true ; do
 		connect=$(connectMeoWiFiv1)
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
 			echo "Successfully connected to MEO WiFi: $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
+			remLine=false
 			continue
 		#Start VPN
 			if $vpn ; then
 				echo -n "Connecting to ProtonVPN: "
 				vpnConnect
+				remLine=false
 			fi					
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
 			echo -e "Someting went wrong. \nError code: $connect"
 			echo "Trying v2 login..."
 			connectMeoWiFiv2
 			connectionVer='v2'
+			remLine=false
 			continue
 		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == '"The service is unavailable."' ] ; then
 			echo -e "Someting went wrong, retrying in 5s...\nError code: $connect"
 			sleep 5
+			remLine=false
 			continue
 		else
 			echo -e "Someting went wrong\nError code: $connect"
@@ -636,6 +650,7 @@ while true ; do
 				fi
 			done <$HOME/.config/meoConnect/${0##*/}.lst	
 			forceSynctime=1
+			remLine=false
 			continue
 		fi
 		echo "-------------------------------------------------------------------------------"
@@ -699,4 +714,5 @@ while true ; do
 			exit
 		fi	
 	done
+	remLine=true
 done

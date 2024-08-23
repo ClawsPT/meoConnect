@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.447'
+version='0.449'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -628,10 +628,11 @@ while true ; do
 			echo -e "Someting went wrong\nError code: $connect"
 		# Get BSSID List.
 			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-			echo "Scanning WiFi networks..." 
+			echo -n "Scanning WiFi networks: " 
 			echo $rPasswd | sudo -S nmcli --fields SSID,BSSID device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
+			echo "Done. $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) APs found."
 			echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
 		# Connecting to BSSID list.	
 			bssid=""

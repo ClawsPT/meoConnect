@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.450'
+version='0.451'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -190,8 +190,9 @@ vpnDisconnect () {
 		echo "Not commected."
 	fi
 
-	echo "Resetting DNS"
+	echo -n "Resetting DNS: "
 	setDNS
+	echo "Done."
 }
 
 connectMeoWiFiv1 () {
@@ -686,7 +687,7 @@ while true ; do
 				skip="f"
 			fi
 			remLine=false
-			echo "-------------------------------------------------------------------------------"
+			echo -e "-------------------------------------------------------------------------------\n"
 		elif [[ $skip = "e" ]]; then
 			echo "-------------------------------------------------------------------------------"
 			echo "Running script editor..."
@@ -713,6 +714,8 @@ while true ; do
 			echo "DownstreamMB: $(echo $json | jq -r '.DownstreamMB')"
 			echo "UpstreamMB: $(echo $json | jq -r '.UpstreamMB')"
 			syncTime
+			echo ""
+			remLine=false
 		elif [[ $skip = "q" ]]; then
 			exit
 		elif [[ $skip = "r" ]]; then

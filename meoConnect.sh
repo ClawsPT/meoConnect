@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.451'
+version='0.455'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -170,7 +170,7 @@ vpnConnect () {
 		serverLoad="$serverLoad%"
 		serverName=$(echo "$serverStatus" | grep "Server:")
 		serverName=${serverName:10}
-		echo "Successfully connected."
+		echo -e "\033[0;92mDone.\033[0m"
 	else
 		echo "Connection failed."
 	fi
@@ -192,7 +192,7 @@ vpnDisconnect () {
 
 	echo -n "Resetting DNS: "
 	setDNS
-	echo "Done."
+	echo -e "\033[0;92mDone.\033[0m"
 }
 
 connectMeoWiFiv1 () {
@@ -421,7 +421,7 @@ syncTime () {
 		$onlineCommand> /dev/null 2>&1 &
 		echo "-------------------------------------------------------------------------------"
 	else
-		echo "Fail."
+		echo -e "\033[0;91mFail..\033[0m"
 		echo -n "                         -> v2: "
 		ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 		ip=${ip%/*}	
@@ -445,7 +445,7 @@ syncTime () {
 			echo "-------------------------------------------------------------------------------"
 		else
 			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
-			echo "Fail."
+			echo -e "\033[0;91mFail..\033[0m"
 			echo "-------------------------------------------------------------------------------"
 		fi
 	fi
@@ -462,16 +462,16 @@ if [ ! -f $confFile ]; then
 	exit
 fi
 source $confFile
-echo "Loading Configuration($confFile): Done."
+echo -e "Loading Configuration  : \033[0;92mDone.\033[0m"
 echo -n "Checking Dependencies  : "
 for name in protonvpn-cli geany mpg321 vnstat curl jq awk notify-send
 	do
 	  [[ $(which $name 2>/dev/null) ]] || { echo -en "\n$name needs to be installed. Use 'sudo apt-get install $name'";deps=1; }
 	done
-[[ $deps -ne 1 ]] && echo "Done." || { echo -en "\nInstall the above and rerun this script\n";exit 1; }
+[[ $deps -ne 1 ]] && echo -e "\033[0;92mDone.\033[0m" || { echo -en "\nInstall the above and rerun this script\n";exit 1; }
 
 echo -n "Checking User  "
-rTest=$(echo $rPasswd | su $(whoami) -c 'echo "Done."')
+rTest=$(echo $rPasswd | su $(whoami) -c 'echo -e "\033[0;92mDone.\033[0m"')
 rTest=$(echo $rTest | grep "Done.")
 echo $rTest
 
@@ -483,7 +483,7 @@ if [ ! $rPasswd ] ; then
 	echo -n "Please enter User password:"
 	read -rs rPasswd
 	echo -n "Checking User  "
-	rTest=$(echo $rPasswd | su $(whoami) -c 'echo "Done."')
+	rTest=$(echo $rPasswd | su $(whoami) -c 'echo -e "\033[0;92mDone.\033[0m"')
 	rTest=$(echo $rTest | grep "Done.")
 	if [[ ! $rTest ]]; then
 		echo "Invalid Password"
@@ -493,7 +493,7 @@ if [ ! $rPasswd ] ; then
 fi
 echo -n "Setting DNS server     : "
 setDNS
-echo "Done."
+echo -e "\033[0;92mDone.\033[0m"
 echo -n "Checking Connection    : "
 netStatus=""
 netStatus=$(echo $(curl $curlCmd --head  --request GET www.google.com |grep "HTTP/"))
@@ -636,7 +636,7 @@ while true ; do
 			echo $rPasswd | sudo -S nmcli --fields SSID,BSSID device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
-			echo "Done. $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) APs found."
+			echo -e "\033[0;92mDone.\033[0m $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) APs found."
 			echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
 		# Connecting to BSSID list.	
 			bssid=""
@@ -648,10 +648,10 @@ while true ; do
 				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 				if [[ "$ip" != "" ]] ; then
-					echo "Done."
+					echo -e "\033[0;92mDone.\033[0m"
 					break
 				else
-					echo "Fail."
+					echo -e "\033[0;91mFail..\033[0m"
 				fi
 			done <$HOME/.config/meoConnect/${0##*/}.lst	
 			forceSynctime=1
@@ -700,8 +700,38 @@ while true ; do
 			echo "------ TESTE -------"
 			
 
-			echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-
+			# Get BSSID List.
+				echo -n "Scanning WiFi networks: " 				
+				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+				echo $rPasswd | sudo -S nmcli --fields SSID,BSSID device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
+				sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
+				sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
+				echo -e "\033[0;92mDone.\033[0m $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) APs found."
+	
+			# Connecting to BSSID list.	
+				cat -b $HOME/.config/meoConnect/${0##*/}.lst
+				read -p "connect to: " lineNumber
+				
+				bssid=$(sed -n "$lineNumber"p $HOME/.config/meoConnect/${0##*/}.lst)
+				echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
+				echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
+				echo -n "Connecting to $bssid: "
+				echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$bssid"
+				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+				if [[ "$ip" != "" ]] ; then
+					echo -e "\033[0;92mDone.\033[0m"
+				else
+					echo -e "\033[0;91mFail..\033[0m"
+				fi
+				
+				forceSynctime=1
+				remLine=false
+				
+			
+				echo "-------------------------------------------------------------------------------"
+				break
 
 
 			echo "------ TESTE -------"

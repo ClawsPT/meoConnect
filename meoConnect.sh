@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.455'
+version='0.461'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -193,6 +193,59 @@ vpnDisconnect () {
 	echo -n "Resetting DNS: "
 	setDNS
 	echo -e "\033[0;92mDone.\033[0m"
+}
+
+connectMeoWiFi () {
+		echo "Login to MEO WiFi...."
+		connect=$(connectMeoWiFiv1)
+		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
+			echo "Successfully connected to MEO WiFi: $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
+			remLine=false
+		#Start VPN
+			if $vpn ; then
+				echo -n "Connecting to ProtonVPN: "
+				vpnConnect
+				remLine=false
+			fi					
+		elif [ "$connect" == '"OUT OF REACH"' ] ; then
+			echo -e "Someting went wrong. \nError code: $connect"
+			echo "Trying v2 login..."
+			connectMeoWiFiv2
+			connectionVer='v2'
+			remLine=false
+		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == '"The service is unavailable."' ] ; then
+			echo -e "Someting went wrong, retrying in 5s...\nError code: $connect"
+			sleep 5
+			remLine=false
+		else
+			echo -e "Someting went wrong\nError code: $connect"
+		# Get BSSID List.
+			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+			echo -n "Scanning WiFi networks: " 
+			echo $rPasswd | sudo -S nmcli --fields SSID,BSSID device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
+			sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
+			sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
+			echo -e "\033[0;92mDone.\033[0m $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) APs found."
+			echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
+		# Connecting to BSSID list.	
+			bssid=""
+			while read p; do
+				echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
+				echo -n "Connecting to $p: "
+				echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$p"
+				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+				if [[ "$ip" != "" ]] ; then
+					echo -e "\033[0;92mDone.\033[0m"
+					break
+				else
+					echo -e "\033[0;91mFail..\033[0m"
+				fi
+			done <$HOME/.config/meoConnect/${0##*/}.lst	
+			forceSynctime=1
+			remLine=false
+		fi
 }
 
 connectMeoWiFiv1 () {
@@ -535,9 +588,12 @@ while true ; do
 		netStatus=$(printf "$netStatus" | sed 's/\r//g' | sed 's/HTTP\/1.1 //g')
 		if [[ $(echo $netStatus | grep "Moved") ]]; then #Moved -> redirected to login portal
 			echo "Redirected to login portal - $netStatus"
+			connectMeoWiFi
+			sleep 2
+			syncTime
 			remLine=false
 			netStatus=""
-			connRetryTemp=0
+			connRetryTemp=$(expr $connRetryTemp + 1 )
 		fi
 		connRetryTemp=$(expr $connRetryTemp - 1 )
 	done
@@ -603,61 +659,8 @@ while true ; do
 		echo "-------------------------------------------------------------------------------"
 		forceSynctime=1
 		vpnDisconnect
-	#Login into MEO-WiFi
-		echo "Login to MEO WiFi...."
-		connect=$(connectMeoWiFiv1)
-		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
-			echo "Successfully connected to MEO WiFi: $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
-			remLine=false
-			continue
-		#Start VPN
-			if $vpn ; then
-				echo -n "Connecting to ProtonVPN: "
-				vpnConnect
-				remLine=false
-			fi					
-		elif [ "$connect" == '"OUT OF REACH"' ] ; then
-			echo -e "Someting went wrong. \nError code: $connect"
-			echo "Trying v2 login..."
-			connectMeoWiFiv2
-			connectionVer='v2'
-			remLine=false
-			continue
-		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == '"The service is unavailable."' ] ; then
-			echo -e "Someting went wrong, retrying in 5s...\nError code: $connect"
-			sleep 5
-			remLine=false
-			continue
-		else
-			echo -e "Someting went wrong\nError code: $connect"
-		# Get BSSID List.
-			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-			echo -n "Scanning WiFi networks: " 
-			echo $rPasswd | sudo -S nmcli --fields SSID,BSSID device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
-			sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
-			sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
-			echo -e "\033[0;92mDone.\033[0m $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) APs found."
-			echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
-		# Connecting to BSSID list.	
-			bssid=""
-			while read p; do
-				echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-				echo -n "Connecting to $p: "
-				echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$p"
-				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
-				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
-				if [[ "$ip" != "" ]] ; then
-					echo -e "\033[0;92mDone.\033[0m"
-					break
-				else
-					echo -e "\033[0;91mFail..\033[0m"
-				fi
-			done <$HOME/.config/meoConnect/${0##*/}.lst	
-			forceSynctime=1
-			remLine=false
-			continue
-		fi
+	#Login into MEO-WiFi v1/v2
+		connectMeoWiFi
 		echo "-------------------------------------------------------------------------------"
 	fi
 

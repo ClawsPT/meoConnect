@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.461'
+version='0.465'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -458,6 +458,7 @@ syncTime () {
 	echo -n "Getting Connection Time: -> v1: "
 	meoTime=""
 	json=""	
+	remLine=false
 	while [[ ! "$meoTime" ]] ;do	 
 		json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
 		json=$(echo $json | jq '.Consumption')
@@ -590,7 +591,7 @@ while true ; do
 			echo "Redirected to login portal - $netStatus"
 			connectMeoWiFi
 			sleep 2
-			syncTime
+			forceSynctime=1
 			remLine=false
 			netStatus=""
 			connRetryTemp=$(expr $connRetryTemp + 1 )
@@ -661,7 +662,7 @@ while true ; do
 		vpnDisconnect
 	#Login into MEO-WiFi v1/v2
 		connectMeoWiFi
-		echo "-------------------------------------------------------------------------------"
+		continue
 	fi
 
 # ----------------------------------- Pause script ----------------------------------
@@ -671,7 +672,7 @@ while true ; do
 	
 	while [ "$skip" != "f" -a "$skipTime" -ge 0 ] ;do
 		linkQuality=$(iwconfig wlan1 | awk -F= '/Quality/ {print $2}' | awk -F/ '{print $1}')
-		echo -n -e ">>>> T-$skipTime""s , S:$linkQuality% , \033[4;1mF\033[0morce , \033[4;1mV\033[0mPN , \033[4;1mE\033[0mdit , \033[4;1mC\033[0monfig , \033[4;1mS\033[0mtatus , \033[4;1mR\033[0meload , \033[4;1mQ\033[0muit <<<<"
+		echo -n -e ">> T-$skipTime""s , S:$linkQuality% , \033[4;1mF\033[0morce , \033[4;1mV\033[0mPN , c\033[4;1mH\033[0mange AP , \033[4;1mC\033[0monfig , \033[4;1mS\033[0mtatus , \033[4;1mR\033[0meload , \033[4;1mQ\033[0muit <<"
 		read -rsn1 -t 1 skip
 		echo -e -n "\r\033[K"
 		
@@ -691,17 +692,7 @@ while true ; do
 			fi
 			remLine=false
 			echo -e "-------------------------------------------------------------------------------\n"
-		elif [[ $skip = "e" ]]; then
-			echo "-------------------------------------------------------------------------------"
-			echo "Running script editor..."
-			$( nohup $editor $(dirname "$0")/meoConnect.sh $confFile> /dev/null 2>&1 & )
-			echo "-------------------------------------------------------------------------------"
-		elif [[ $skip = "c" ]]; then
-			editSettings
-# -------------------------------------- TESTE --------------------------------------
-		elif [[ $skip = "t" ]]; then
-			echo "------ TESTE -------"
-			
+		elif [[ $skip = "h" ]]; then
 
 			# Get BSSID List.
 				echo -n "Scanning WiFi networks: " 				
@@ -731,14 +722,19 @@ while true ; do
 				
 				forceSynctime=1
 				remLine=false
-				
-			
-				echo "-------------------------------------------------------------------------------"
+				connectMeoWiFi
 				break
 
+		elif [[ $skip = "c" ]]; then
+			editSettings
+# ----------------------------------------------- TESTE -----------------------------------------
+		elif [[ $skip = "t" ]]; then
+			echo "------------------------------- TESTE -----------------------------------------"
 
-			echo "------ TESTE -------"
-# -------------------------------------- TESTE --------------------------------------
+
+
+			echo "------------------------------- TESTE -----------------------------------------"
+# ----------------------------------------------- TESTE -----------------------------------------
 		elif [[ $skip = "s" ]]; then
 			echo "-------------------------------------------------------------------------------"
 			json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.465'
+version='0.467'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -573,7 +573,7 @@ else
 	echo "Disconnected."
 	starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 fi
-echo "$(date "+%Y-%m-%d - %H:%M:%S") - Starting script"
+echo "    $(date "+%Y-%m-%d - %H:%M:%S") - Starting script"
 echo -e "-------------------------------------------------------------------------------"
 
 # -------------------------------- Start Loop ---------------------------------------
@@ -654,8 +654,9 @@ while true ; do
 	else
 
 # -------------------------------------- OFFLINE ------------------------------------
-
-		echo " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S") - Offline - $(date "+%d-%m-%y - %H:%M:%S")"
+		
+		echo "-------------------------------------------------------------------------------"
+		echo "    Offline - $(date "%H:%M:%S") | $connectionVer | T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime))) | $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
 		mpg321 -q $SCRIPT_DIR/alarm.mp3
 		echo "-------------------------------------------------------------------------------"
 		forceSynctime=1

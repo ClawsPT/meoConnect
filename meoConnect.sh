@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.467'
+version='0.468'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -182,9 +182,9 @@ vpnDisconnect () {
 	if [[ $(ifconfig | grep proton) ]] ; then
 		vpnDisConn=$(timeout --preserve-status -k 5 30 protonvpn-cli d | grep "Successfully disconnected")
 		if [[ "$vpnDisConn" ]]; then
-			echo "Successfully disconnected."
+			echo -e "\033[1;92mSuccessfully\033[0m disconnected."
 		else
-			echo "Timedout. (This is normal)"
+			echo -e "\033[1;92mTimedout. (This is normal)\033[0m"
 		fi		
 	else
 		echo "Not commected."
@@ -199,7 +199,7 @@ connectMeoWiFi () {
 		echo "Login to MEO WiFi...."
 		connect=$(connectMeoWiFiv1)
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
-			echo "Successfully connected to MEO WiFi: $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
+			echo -e "\033[1;92mSuccessfully connected\033[0m to MEO WiFi: $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
 			remLine=false
 		#Start VPN
 			if $vpn ; then
@@ -556,13 +556,13 @@ if [[ $(echo $netStatus | grep "Moved") ]]; then #Moved -> redirected to login p
 fi
 
 if [[ "$netStatus" ]]; then
-	echo "Connected to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
+	echo -e "\033[1;92mConnected\033[0m to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 	if [[ $(ifconfig | grep proton) ]] ; then
 		
 		if $vpn ; then
-			echo "Checking ProtonVPN     : Connected."
+			echo -e "Checking ProtonVPN     : \033[1;92mConnected.\033[0m"
 		else
-			echo "Checking ProtonVPN     : Wrong state, Disconecting."
+			echo -e "Checking ProtonVPN     : \033[1;91mWrong state, Disconecting.\033[0m"
 			vpnDisconnect
 		fi	
 	else
@@ -570,7 +570,7 @@ if [[ "$netStatus" ]]; then
 	fi
 	syncTime
 else
-	echo "Disconnected."
+	echo -e "\033[1;91mDisconnected.\033[0m"
 	starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 fi
 echo "    $(date "+%Y-%m-%d - %H:%M:%S") - Starting script"
@@ -656,7 +656,7 @@ while true ; do
 # -------------------------------------- OFFLINE ------------------------------------
 		
 		echo "-------------------------------------------------------------------------------"
-		echo "    Offline - $(date "+%H:%M:%S") | $connectionVer | T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime))) | $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
+		echo -e "    \033[1;91mOFFLINE\033[0m - $(date "+%H:%M:%S") | $connectionVer | T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime))) | $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
 		mpg321 -q $SCRIPT_DIR/alarm.mp3
 		echo "-------------------------------------------------------------------------------"
 		forceSynctime=1

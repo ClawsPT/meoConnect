@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.479'
+version='0.480'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -518,8 +518,9 @@ checkUpdate () {
 		curl https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -o "$SCRIPT_DIR/"${0##*/}
 		chmod +x "$SCRIPT_DIR/"${0##*/}
 		echo "Restarting script."
+		mpg321 -q $SCRIPT_DIR/alarm.mp3
 		sleep 1
-		exec meoConnect.sh
+		exec "$SCRIPT_DIR/"${0##*/}
 	fi
 }
 
@@ -770,7 +771,7 @@ while true ; do
 			echo "Reloading script"
 			sleep 1
 			mpg321 -q $SCRIPT_DIR/alarm.mp3
-			exec meoConnect.sh
+			exec "$SCRIPT_DIR/"${0##*/}
 			exit
 		fi	
 	done

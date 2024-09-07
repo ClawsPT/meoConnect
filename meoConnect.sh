@@ -454,7 +454,8 @@ rm $FILE
 }
 
 syncTime () {
-
+	
+	checkUpdate
 	echo -n "Getting Connection Time: v1: "
 	meoTime=""
 	json=""	
@@ -471,8 +472,7 @@ syncTime () {
 		currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 		starttime=$(($currenttime - $meoTime))
 		connectionVer='v1'
-		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
-		checkUpdate
+		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"	
 		$onlineCommand> /dev/null 2>&1
 		echo "-------------------------------------------------------------------------------"
 	else
@@ -495,8 +495,7 @@ syncTime () {
 			totaltime=$(($currenttime - $starttime))
 			echo $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")
 			connectionVer='v2'
-			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
-			checkUpdate
+			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"		
 			$onlineCommand> /dev/null 2>&1
 			echo "-------------------------------------------------------------------------------"
 		else

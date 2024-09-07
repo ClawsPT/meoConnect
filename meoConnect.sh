@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.476'
+version='0.477'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -472,7 +472,8 @@ syncTime () {
 		starttime=$(($currenttime - $meoTime))
 		connectionVer='v1'
 		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
-		$onlineCommand> /dev/null 2>&1 &
+		$onlineCommand> /dev/null 2>&1
+		checkUpdate
 		echo "-------------------------------------------------------------------------------"
 	else
 		echo -e "\033[1;91mFail..\033[0m"
@@ -495,7 +496,8 @@ syncTime () {
 			echo $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")
 			connectionVer='v2'
 			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
-			$onlineCommand> /dev/null 2>&1 &
+			$onlineCommand> /dev/null 2>&1
+			checkUpdate
 			echo "-------------------------------------------------------------------------------"
 		else
 			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
@@ -520,7 +522,6 @@ checkUpdate () {
 		sleep 1
 		exec meoConnect.sh
 	fi
-	
 }
 
 clear
@@ -586,7 +587,6 @@ if [[ "$netStatus" ]]; then
 	else
 		echo "Checking ProtonVPN     : Disconnected."
 	fi
-	checkUpdate
 	syncTime
 else
 	echo -e "\033[1;91mDisconnected.\033[0m"

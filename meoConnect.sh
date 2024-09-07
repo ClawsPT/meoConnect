@@ -472,8 +472,8 @@ syncTime () {
 		starttime=$(($currenttime - $meoTime))
 		connectionVer='v1'
 		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
-		$onlineCommand> /dev/null 2>&1
 		checkUpdate
+		$onlineCommand> /dev/null 2>&1
 		echo "-------------------------------------------------------------------------------"
 	else
 		echo -e "\033[1;91mFail..\033[0m"
@@ -496,8 +496,8 @@ syncTime () {
 			echo $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")
 			connectionVer='v2'
 			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
-			$onlineCommand> /dev/null 2>&1
 			checkUpdate
+			$onlineCommand> /dev/null 2>&1
 			echo "-------------------------------------------------------------------------------"
 		else
 			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
@@ -751,8 +751,7 @@ while true ; do
 		elif [[ $skip = "t" ]]; then
 			echo "------------------------------- TESTE -----------------------------------------"
 
-			echo "version='$version'"
-			checkUpdate
+			syncTime
 
 			echo "------------------------------- TESTE -----------------------------------------"
 # ----------------------------------------------- TESTE -----------------------------------------

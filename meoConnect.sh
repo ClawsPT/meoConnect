@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.475'
+version='0.476'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.468'
+version='0.470'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -170,9 +170,9 @@ vpnConnect () {
 		serverLoad="$serverLoad%"
 		serverName=$(echo "$serverStatus" | grep "Server:")
 		serverName=${serverName:10}
-		echo -e "\033[0;92mDone.\033[0m"
+		echo -e "\033[1;92mDone.\033[0m"
 	else
-		echo "Connection failed."
+		echo "\033[1;91mConnection failed.\033[0m"
 	fi
 }
 
@@ -182,7 +182,7 @@ vpnDisconnect () {
 	if [[ $(ifconfig | grep proton) ]] ; then
 		vpnDisConn=$(timeout --preserve-status -k 5 30 protonvpn-cli d | grep "Successfully disconnected")
 		if [[ "$vpnDisConn" ]]; then
-			echo -e "\033[1;92mSuccessfully\033[0m disconnected."
+			echo -e "\033[1;92mSuccessfully disconnected.\033[0m"
 		else
 			echo -e "\033[1;92mTimedout. (This is normal)\033[0m"
 		fi		
@@ -192,7 +192,7 @@ vpnDisconnect () {
 
 	echo -n "Resetting DNS: "
 	setDNS
-	echo -e "\033[0;92mDone.\033[0m"
+	echo -e "\033[1;92mDone.\033[0m"
 }
 
 connectMeoWiFi () {
@@ -225,7 +225,7 @@ connectMeoWiFi () {
 			echo $rPasswd | sudo -S nmcli --fields SSID,BSSID device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
-			echo -e "\033[0;92mDone.\033[0m $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) APs found."
+			echo -e "\033[1;92mDone.\033[0m $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) APs found."
 			echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
 		# Connecting to BSSID list.	
 			bssid=""
@@ -237,10 +237,10 @@ connectMeoWiFi () {
 				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 				if [[ "$ip" != "" ]] ; then
-					echo -e "\033[0;92mDone.\033[0m"
+					echo -e "\033[1;92mDone.\033[0m"
 					break
 				else
-					echo -e "\033[0;91mFail..\033[0m"
+					echo -e "\033[1;91mFail..\033[0m"
 				fi
 			done <$HOME/.config/meoConnect/${0##*/}.lst	
 			forceSynctime=1
@@ -475,7 +475,7 @@ syncTime () {
 		$onlineCommand> /dev/null 2>&1 &
 		echo "-------------------------------------------------------------------------------"
 	else
-		echo -e "\033[0;91mFail..\033[0m"
+		echo -e "\033[1;91mFail..\033[0m"
 		echo -n "                         -> v2: "
 		ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 		ip=${ip%/*}	
@@ -499,11 +499,33 @@ syncTime () {
 			echo "-------------------------------------------------------------------------------"
 		else
 			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
-			echo -e "\033[0;91mFail..\033[0m"
+			echo -e "\033[1;91mFail..\033[0m"
 			echo "-------------------------------------------------------------------------------"
 		fi
 	fi
 	}
+
+checkUpdate () {
+
+	echo -n "Checking for updates   : "
+	gitVer=$(curl https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -s -r 0-30 | grep "version")
+	if [ "$gitVer" == "version='$version'" ] ; then
+		echo -e "\033[1;92mUpdated.\033[0m"
+		echo "$SCRIPT_DIR/"${0##*/}
+	else
+		echo -e "\033[1;92mGeting update.\033[0m"
+		curl https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -o "$SCRIPT_DIR/"${0##*/}
+		chmod +x "$SCRIPT_DIR/"${0##*/}
+		echo "Restarting script."
+		exec meoConnect.sh
+	fi
+	
+	
+	
+	
+	
+	
+}
 
 clear
 
@@ -516,16 +538,16 @@ if [ ! -f $confFile ]; then
 	exit
 fi
 source $confFile
-echo -e "Loading Configuration  : \033[0;92mDone.\033[0m"
+echo -e "Loading Configuration  : \033[1;92mDone.\033[0m"
 echo -n "Checking Dependencies  : "
 for name in protonvpn-cli geany mpg321 vnstat curl jq awk notify-send
 	do
 	  [[ $(which $name 2>/dev/null) ]] || { echo -en "\n$name needs to be installed. Use 'sudo apt-get install $name'";deps=1; }
 	done
-[[ $deps -ne 1 ]] && echo -e "\033[0;92mDone.\033[0m" || { echo -en "\nInstall the above and rerun this script\n";exit 1; }
+[[ $deps -ne 1 ]] && echo -e "\033[1;92mDone.\033[0m" || { echo -en "\nInstall the above and rerun this script\n";exit 1; }
 
 echo -n "Checking User  "
-rTest=$(echo $rPasswd | su $(whoami) -c 'echo -e "\033[0;92mDone.\033[0m"')
+rTest=$(echo $rPasswd | su $(whoami) -c 'echo -e "\033[1;92mDone.\033[0m"')
 rTest=$(echo $rTest | grep "Done.")
 echo $rTest
 
@@ -537,7 +559,7 @@ if [ ! $rPasswd ] ; then
 	echo -n "Please enter User password:"
 	read -rs rPasswd
 	echo -n "Checking User  "
-	rTest=$(echo $rPasswd | su $(whoami) -c 'echo -e "\033[0;92mDone.\033[0m"')
+	rTest=$(echo $rPasswd | su $(whoami) -c 'echo -e "\033[1;92mDone.\033[0m"')
 	rTest=$(echo $rTest | grep "Done.")
 	if [[ ! $rTest ]]; then
 		echo "Invalid Password"
@@ -547,7 +569,7 @@ if [ ! $rPasswd ] ; then
 fi
 echo -n "Setting DNS server     : "
 setDNS
-echo -e "\033[0;92mDone.\033[0m"
+echo -e "\033[1;92mDone.\033[0m"
 echo -n "Checking Connection    : "
 netStatus=""
 netStatus=$(echo $(curl $curlCmd --head  --request GET www.google.com |grep "HTTP/"))
@@ -568,6 +590,7 @@ if [[ "$netStatus" ]]; then
 	else
 		echo "Checking ProtonVPN     : Disconnected."
 	fi
+	checkUpdate
 	syncTime
 else
 	echo -e "\033[1;91mDisconnected.\033[0m"
@@ -701,7 +724,7 @@ while true ; do
 				echo $rPasswd | sudo -S nmcli --fields SSID,BSSID device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
 				sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
 				sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
-				echo -e "\033[0;92mDone.\033[0m $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) APs found."
+				echo -e "\033[1;92mDone.\033[0m $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) APs found."
 	
 			# Connecting to BSSID list.	
 				cat -b $HOME/.config/meoConnect/${0##*/}.lst
@@ -716,9 +739,9 @@ while true ; do
 				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 				if [[ "$ip" != "" ]] ; then
-					echo -e "\033[0;92mDone.\033[0m"
+					echo -e "\033[1;92mDone.\033[0m"
 				else
-					echo -e "\033[0;91mFail..\033[0m"
+					echo -e "\033[1;91mFail..\033[0m"
 				fi
 				
 				forceSynctime=1
@@ -732,7 +755,8 @@ while true ; do
 		elif [[ $skip = "t" ]]; then
 			echo "------------------------------- TESTE -----------------------------------------"
 
-
+			echo "version='$version'"
+			checkUpdate
 
 			echo "------------------------------- TESTE -----------------------------------------"
 # ----------------------------------------------- TESTE -----------------------------------------

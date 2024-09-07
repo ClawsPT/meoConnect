@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.478'
+version='0.479'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -512,9 +512,9 @@ checkUpdate () {
 	gitVer=$(curl $curlCmd https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -s -r 0-30 | grep "version")
 	
 	if [ "$gitVer" == "version='$version'" ] ; then
-		echo -e "\033[1;92mUpdated.\033[0m"
+		echo -e "\033[1;92mUpdated.\033[0m ($gitVer)"
 	else
-		echo -e "\033[1;92mGeting update.\033[0m"
+		echo -e "\033[1;92mGeting update.\033[0m ($gitVer)"
 		curl https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -o "$SCRIPT_DIR/"${0##*/}
 		chmod +x "$SCRIPT_DIR/"${0##*/}
 		echo "Restarting script."

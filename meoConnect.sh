@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.485'
+version='0.486'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -172,7 +172,7 @@ vpnConnect () {
 		serverName=${serverName:10}
 		echo -e "\033[1;92mDone.\033[0m"
 	else
-		echo "\033[1;91mConnection failed.\033[0m"
+		echo -e "\033[1;91mConnection failed.\033[0m"
 	fi
 }
 

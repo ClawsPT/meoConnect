@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.480'
+version='0.481'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -509,7 +509,7 @@ syncTime () {
 checkUpdate () {
 
 	echo -n "Checking for updates   : "
-	gitVer=$(curl $curlCmd https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -s -r 0-30 | grep "version")
+	gitVer=$(curl $curlCmd https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -s -r 13-28 | grep "version")
 	
 	if [ "$gitVer" == "version='$version'" ] ; then
 		echo -e "\033[1;92mUpdated.\033[0m ($gitVer)"
@@ -751,7 +751,7 @@ while true ; do
 		elif [[ $skip = "t" ]]; then
 			echo "------------------------------- TESTE -----------------------------------------"
 
-			syncTime
+			
 
 			echo "------------------------------- TESTE -----------------------------------------"
 # ----------------------------------------------- TESTE -----------------------------------------

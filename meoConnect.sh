@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.482'
+version='0.483'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -456,7 +456,7 @@ rm $FILE
 syncTime () {
 	
 	checkUpdate
-	echo -n "Getting Connection Time: v1: "
+	echo -n "Getting Connection Time: "
 	meoTime=""
 	json=""	
 	remLine=false
@@ -467,7 +467,7 @@ syncTime () {
 	done
 	if [ "$meoTime" != "null" ]; then
 		meoTime="$meoTime:00"
-		echo "$meoTime"
+		echo -e "\033[0mv1:\033[0m $meoTime"
 		meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
 		currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 		starttime=$(($currenttime - $meoTime))
@@ -476,8 +476,8 @@ syncTime () {
 		$onlineCommand> /dev/null 2>&1
 		echo "-------------------------------------------------------------------------------"
 	else
-		echo -e "\033[1;91mFail..\033[0m"
-		echo -n "                         v2: "
+		echo -e "\033[1;91mv1: Fail..\033[0m"
+		echo -n "                         "
 		ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 		ip=${ip%/*}	
 		url="https://meowifi.meo.pt/wifim-scl/service/session-status"
@@ -493,14 +493,14 @@ syncTime () {
 			starttime=$(date -d "1970-01-01 $meoTime Z" +%s)
 			currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 			totaltime=$(($currenttime - $starttime))
-			echo $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")
+			echo -e "\033[0mv2:\033[0m $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
 			connectionVer='v2'
 			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"		
 			$onlineCommand> /dev/null 2>&1
 			echo "-------------------------------------------------------------------------------"
 		else
 			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
-			echo -e "\033[1;91mFail..\033[0m"
+			echo -e "\033[1;91mv2: Fail..\033[0m"
 			echo "-------------------------------------------------------------------------------"
 		fi
 	fi

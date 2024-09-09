@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.486'
+version='0.487'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -519,7 +519,7 @@ checkUpdate () {
 		chmod +x "$SCRIPT_DIR/"${0##*/}
 		echo "Restarting script."
 		mpg321 -q $SCRIPT_DIR/alarm.mp3
-		sleep 1
+		sleep 5
 		exec "$SCRIPT_DIR/"${0##*/}
 	fi
 }

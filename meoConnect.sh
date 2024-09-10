@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.487'
+version='0.488'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -524,11 +524,8 @@ checkUpdate () {
 	fi
 }
 
-clear
-
-echo "-------------------------------------------------------------------------------"
-echo "|                         MEO Wifi AutoConnect v$version                         |"
-echo "-------------------------------------------------------------------------------"
+startUp () {
+	
 if [ ! -f $confFile ]; then
     echo "Configuration File not found..."
     editSettings
@@ -594,6 +591,14 @@ else
 fi
 echo "    $(date "+%Y-%m-%d - %H:%M:%S") - Starting script"
 echo -e "-------------------------------------------------------------------------------"
+
+}
+
+clear
+echo "-------------------------------------------------------------------------------"
+echo "|                         MEO Wifi AutoConnect v$version                         |"
+echo "-------------------------------------------------------------------------------"
+startUp
 
 # -------------------------------- Start Loop ---------------------------------------
 

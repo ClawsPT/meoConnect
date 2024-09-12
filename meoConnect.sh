@@ -618,7 +618,7 @@ while true ; do
 			forceSynctime=1
 			remLine=false
 			netStatus=""
-			connRetryTemp=$(expr $connRetryTemp + 1 )
+			continue
 		fi
 		connRetryTemp=$(expr $connRetryTemp - 1 )
 	done
@@ -687,6 +687,7 @@ while true ; do
 		vpnDisconnect
 	#Login into MEO-WiFi v1/v2
 		connectMeoWiFi
+		echo "-------------------------------------------------------------------------------"
 		continue
 	fi
 

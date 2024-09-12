@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.491'
+version='0.492'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -514,8 +514,10 @@ checkUpdate () {
 	if [ "$gitVer" == "version='$version'" ] ; then
 		echo -e "\033[1;92mUpdated.\033[0m ($gitVer)"
 	else
-		echo -e "\033[1;92mGeting update.\033[0m ($gitVer)"
+		echo -e "\033[1;92mUpdate found.\033[0m ($gitVer)"
+		echo -e "Downloading update."
 		curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" --progress-bar https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -o "$SCRIPT_DIR/${0##*/}"
+		echo -e "Download: \033[1;92mDone.\033[0m"
 		chmod +x "$SCRIPT_DIR/"${0##*/}
 		echo "Restarting script."
 		mpg321 -q $SCRIPT_DIR/alarm.mp3

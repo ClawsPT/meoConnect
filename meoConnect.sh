@@ -1,9 +1,10 @@
 #!/bin/bash
 
-version='0.493'
+version='0.495'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
+dnsFile=$HOME/.config/meoConnect/${0##*/}.dns
 forceSynctime=0
 remLine=false
 
@@ -364,9 +365,12 @@ editSettings () {
 	if [ "$sTemp" ] ; then
 		onlineCommand=$sTemp
 	fi
-	
+
 # Text Editor
 	editor='geany'
+
+	echo "Note: To use a custom DNS please edit $dnsFile"
+	echo ""
 
 	echo -n "Save Configuration (y/n):"
 	read -r sTemp
@@ -434,23 +438,7 @@ EOF
 
 setDNS () {
 	
-FILE="$HOME/.config/meoConnect/resolv.conf"	
-touch $FILE
-
-/bin/cat <<EOF >$FILE
-# This file was written by meoConnect v$version)
-
-# Google DNS
-nameserver 8.8.8.8
-nameserver 8.8.4.4
-nameserver 127.0.0.53
-options timeout:3
-options attempts:2
-options edns0 trust-ad
-EOF
-
-echo $rPasswd | sudo -S cp -f $FILE /etc/resolv.conf  > /dev/null 2>&1
-rm $FILE
+echo $rPasswd | sudo -S cp -f $dnsFile /etc/resolv.conf  > /dev/null 2>&1
 }
 
 syncTime () {
@@ -526,6 +514,24 @@ checkUpdate () {
 	fi
 }
 
+createDNSfile () {
+	
+touch $dnsFile
+
+/bin/cat <<EOF >$dnsFile
+# This file was written by meoConnect v$version)
+
+# Google DNS
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+nameserver 127.0.0.53
+options timeout:3
+options attempts:2
+options edns0 trust-ad
+EOF
+
+}
+
 startUp () {
 	
 if [ ! -f $confFile ]; then
@@ -533,6 +539,13 @@ if [ ! -f $confFile ]; then
     editSettings
 	exit
 fi
+
+if [ ! -f $dnsFile ]; then
+    echo -e -n "DNS File not found, creating default DNS file: "
+    createDNSfile
+    echo -e "\033[1;92mDone.\033[0m"
+fi
+
 source $confFile
 echo -e "Loading Configuration  : \033[1;92mDone.\033[0m"
 echo -n "Checking Dependencies  : "

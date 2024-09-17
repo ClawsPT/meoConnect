@@ -541,7 +541,7 @@ if [ ! -f $confFile ]; then
 fi
 
 if [ ! -f $dnsFile ]; then
-    echo -e -n "Checking DNS file      : \033[1;91mFail, creating new: \033[0m" "
+    echo -e -n "Checking DNS file      : \033[1;91mFail, creating new: \033[0m"
     createDNSfile
     echo -e "\033[1;92mDone.\033[0m"
 else

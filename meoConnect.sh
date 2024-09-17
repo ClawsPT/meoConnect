@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.496'
+version='0.497'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -545,7 +545,7 @@ if [ ! -f $dnsFile ]; then
     createDNSfile
     echo -e "\033[1;92mDone.\033[0m"
 else
-	echo -e -n "Checking DNS file      : \033[1;92mDone.\033[0m"
+	echo -e "Checking DNS file      : \033[1;92mDone.\033[0m"
 fi
 
 source $confFile

@@ -635,7 +635,7 @@ while true ; do
 		netStatus=$(printf "$netStatus" | sed 's/\r//g' | sed 's/HTTP\/1.1 //g')
 		if [[ $(echo $netStatus | grep "Moved") ]]; then #Moved -> redirected to login portal
 			echo "-------------------------------------------------------------------------------"
-			echo -e "  $(date "+%Y-%m-%d - %H:%M:%S") - \033[1;92mRedirected to login portal\033[0m - $netStatus"
+			echo -e "  $(date "+%H:%M:%S") - \033[1;92mRedirected to login portal\033[0m - $netStatus"
 			connectMeoWiFi
 			sleep 5
 			forceSynctime=1

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.497'
+version='0.498'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -369,7 +369,7 @@ editSettings () {
 # Text Editor
 	editor='geany'
 
-	echo "Note: To use a custom DNS please edit $dnsFile"
+	echo "Note: To Change DNS config edit $dnsFile"
 	echo ""
 
 	echo -n "Save Configuration (y/n):"
@@ -541,11 +541,11 @@ if [ ! -f $confFile ]; then
 fi
 
 if [ ! -f $dnsFile ]; then
-    echo -e -n "Checking DNS file      : \033[1;91mFail, creating new: \033[0m"
+    echo -e -n "Checking Conf DNS file : \033[1;91mFail, creating new: \033[0m"
     createDNSfile
     echo -e "\033[1;92mDone.\033[0m"
 else
-	echo -e "Checking DNS file      : \033[1;92mDone.\033[0m"
+	echo -e "Checking Conf DNS file : \033[1;92mDone.\033[0m"
 fi
 
 source $confFile
@@ -780,6 +780,8 @@ while true ; do
 		elif [[ $skip = "t" ]]; then
 			echo "------------------------------- TESTE -----------------------------------------"
 
+			
+			
 			
 
 			echo "------------------------------- TESTE -----------------------------------------"

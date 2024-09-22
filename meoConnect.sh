@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.501'
+version='0.502'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -782,8 +782,16 @@ while true ; do
 			echo "------------------------------- TESTE -----------------------------------------"
 
 			
-			
-			
+				echo $rPasswd | sudo -S nmcli --fields SSID,BSSID,BARS device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
+				sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
+				sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
+				echo -e "\033[1;92mDone.\033[0m $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) APs found."
+	
+			# Connecting to BSSID list.	
+				cat -b $HOME/.config/meoConnect/${0##*/}.lst
+				read -p "connect to: " lineNumber
+				bssid=$(sed -n "$lineNumber"p $HOME/.config/meoConnect/${0##*/}.lst)
+				echo $(echo $bssid | cut -c1-17
 
 			echo "------------------------------- TESTE -----------------------------------------"
 # ----------------------------------------------- TESTE -----------------------------------------

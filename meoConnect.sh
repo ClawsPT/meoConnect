@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.504'
+version='0.505'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -632,10 +632,10 @@ while true ; do
 	connRetryTemp=$(expr $connRetry + 1 )
 	while [ "$netStatus" = "" -a "$connRetryTemp" -ge 1 ] ;do
 		netStatus=$(echo $(curl $curlCmd --head www.google.com | grep "HTTP/"))
-		netStatus=$(printf "$netStatus" | sed 's/\r//g' | sed 's/HTTP\/1.1 //g')
+		netStatus=$(printf "$netStatus" | sed 's/\r//g' | sed 's/HTTP\/1.1 //g' | sed 's/HTTP\/1.0 //g')
 		if [[ $(echo $netStatus | grep "Moved") ]]; then #Moved -> redirected to login portal
 			echo "-------------------------------------------------------------------------------"
-			echo -e "  \033[1;91mOFFLINE\033[0m - $(date "+%H:%M:%S") - \033[1;92mRedirected to login portal\033[0m - $netStatus"
+			echo -e "    \033[1;91mOFFLINE\033[0m - $(date "+%H:%M:%S") - \033[1;92mRedirected to login portal\033[0m - $netStatus"
 			echo "-------------------------------------------------------------------------------"
 			connectMeoWiFi
 			sleep 5

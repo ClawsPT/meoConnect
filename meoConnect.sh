@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.505'
+version='0.506'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -711,7 +711,6 @@ while true ; do
 		vpnDisconnect
 	#Login into MEO-WiFi v1/v2
 		connectMeoWiFi
-		echo "-------------------------------------------------------------------------------"
 		continue
 	fi
 

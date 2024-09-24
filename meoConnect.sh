@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.506'
+version='0.507'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -197,7 +197,7 @@ vpnDisconnect () {
 }
 
 connectMeoWiFi () {
-		echo "Login to MEO WiFi...."
+		echo "Login into MEO WiFi...."
 		connect=$(connectMeoWiFiv1)
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
 			echo -e "\033[1;92mSuccessfully connected\033[0m to MEO WiFi: $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
@@ -618,7 +618,7 @@ echo -e "-----------------------------------------------------------------------
 
 clear
 echo "-------------------------------------------------------------------------------"
-echo "|                         MEO Wifi AutoConnect v$version                         |"
+echo "|                        MEO Wifi AutoConnect v$version                          |"
 echo "-------------------------------------------------------------------------------"
 startUp
 

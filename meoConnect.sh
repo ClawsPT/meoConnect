@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.507'
+version='0.508'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -241,7 +241,7 @@ connectMeoWiFi () {
 					echo -e "\033[1;92mDone.\033[0m"
 					break
 				else
-					echo -e "\033[1;91mFail..\033[0m"
+					echo -e "\033[1;91mFail.\033[0m"
 				fi
 			done <$HOME/.config/meoConnect/${0##*/}.lst	
 			forceSynctime=1
@@ -464,7 +464,7 @@ syncTime () {
 		$onlineCommand> /dev/null 2>&1
 		echo "-------------------------------------------------------------------------------"
 	else
-		echo -e "\033[1;91mv1: Fail..\033[0m"
+		echo -e "\033[1;91mv1: Fail.\033[0m"
 		echo -n "                         "
 		ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 		ip=${ip%/*}	
@@ -488,7 +488,7 @@ syncTime () {
 			echo "-------------------------------------------------------------------------------"
 		else
 			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
-			echo -e "\033[1;91mv2: Fail..\033[0m"
+			echo -e "\033[1;91mv2: Fail.\033[0m"
 			echo "-------------------------------------------------------------------------------"
 		fi
 	fi
@@ -767,7 +767,7 @@ while true ; do
 				if [[ "$ip" != "" ]] ; then
 					echo -e "\033[1;92mDone.\033[0m"
 				else
-					echo -e "\033[1;91mFail..\033[0m"
+					echo -e "\033[1;91mFail.\033[0m"
 				fi
 				
 				forceSynctime=1

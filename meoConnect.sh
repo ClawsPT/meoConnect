@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.510'
+version='0.511'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -246,6 +246,7 @@ connectMeoWiFi () {
 			done <$HOME/.config/meoConnect/${0##*/}.lst	
 			forceSynctime=1
 			remLine=false
+			connectMeoWiFi
 		fi
 }
 

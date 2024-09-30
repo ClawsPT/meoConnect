@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.511'
+version='0.512'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -209,17 +209,19 @@ connectMeoWiFi () {
 				remLine=false
 			fi					
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
-			echo -e "Someting went wrong. \nError code: $connect"
+			echo -e "Someting went wrong: \033[1;91m$connect\033[0m"
 			echo "Trying v2 login..."
 			connectMeoWiFiv2
 			connectionVer='v2'
 			remLine=false
 		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == '"The service is unavailable."' ] ; then
-			echo -e "Someting went wrong, retrying in 5s...\nError code: $connect"
+			echo -e "Someting went wrong, retrying in 5s... \033[1;91m$connect\033[0m"
 			sleep 5
+			forceSynctime=1
 			remLine=false
+			connectMeoWiFi
 		else
-			echo -e "Someting went wrong\n    Error code: $connect"
+			echo -e "Someting went wrong: \033[1;91m$connect\033[0m"
 		# Get BSSID List.
 			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 			echo -n "Scanning for MEO WiFi networks: " 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.509'
+version='0.510'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -279,7 +279,7 @@ connectMeoWiFiv2 () {
 	sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
 	sessionId=$(echo $sessionId | jq -r '.sessionId')
 		
-	if [ $sessionId != 'null' ] ; then
+	if [ "$sessionId" != "null" ] ; then
 	# Construct the URL for session login
 		url="https://meowifi.meo.pt/wifim-scl/service/${sessionId}/session-login"
 	# Construct the login request body

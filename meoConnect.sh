@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.512'
+version='0.513'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -163,7 +163,7 @@ vpnConnect () {
 	if [[ $(ifconfig | grep "proton") || $(ifconfig | grep "ipv6leakintrf") ]]; then
 		foo=$(timeout --preserve-status -k 5 30 protonvpn-cli d)
 	fi
-	vpnConn=$(timeout --preserve-status -k 5 45 protonvpn-cli connect --cc NL --protocol udp | grep "Successfully connected")
+	vpnConn=$(timeout --preserve-status -k 5 45 protonvpn-cli connect --cc NL --protocol tcp | grep "Successfully connected")
 	if [[ "$vpnConn" ]]; then
 		serverStatus=$(protonvpn-cli s)
 		serverLoad=$(echo "$serverStatus" | grep "Server Load")

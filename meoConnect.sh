@@ -598,12 +598,12 @@ if [[ "$netStatus" ]]; then
 		if $vpn ; then
 			echo -e "Checking ProtonVPN     : \033[1;92mConnected.\033[0m"
 		else
-			echo -e "Checking ProtonVPN     : \033[1;91mWrong state, Disconecting.\033[0m"
+			echo -e -n "Checking ProtonVPN     : \033[1;91mWrong state, Disconecting.\033[0m: "
 			vpnDisconnect
 		fi	
 	else
 		if $vpn ; then
-			echo -e "Checking ProtonVPN     : \033[1;91mWrong state, Conecting.\033[0m"
+			echo -e -n "Checking ProtonVPN     : \033[1;91mWrong state, Conecting.\033[0m: "
 			vpnConnect
 		else
 			echo -e "Checking ProtonVPN     : \033[1;92mDisconnected.\033[0m"

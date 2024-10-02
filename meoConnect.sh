@@ -542,7 +542,7 @@ if [ ! -f $confFile ]; then
     echo -e "Checking Config file      : \033[1;91mFail, creating new: \033[0m"
     editSettings
 	exit
-elif
+else
 	echo -e "Checking Config file      : \033[1;92mDone.\033[0m"
 fi
 

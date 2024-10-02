@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.518'
+version='0.519'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -539,9 +539,11 @@ EOF
 startUp () {
 	
 if [ ! -f $confFile ]; then
-    echo "Configuration File not found..."
+    echo -e "Checking Config file      : \033[1;91mFail, creating new: \033[0m"
     editSettings
 	exit
+elif
+	echo -e "Checking Config file      : \033[1;92mDone.\033[0m"
 fi
 
 if [ ! -f $dnsFile ]; then

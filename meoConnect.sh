@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.519'
+version='0.520'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -539,27 +539,27 @@ EOF
 startUp () {
 	
 if [ ! -f $confFile ]; then
-    echo -e "Checking Config file      : \033[1;91mFail, creating new: \033[0m"
+    echo -e "Checking Config file   : \033[1;91mFail, creating new: \033[0m"
     editSettings
 	exit
 else
-	echo -e "Checking Config file      : \033[1;92mDone.\033[0m"
+	echo -e "Checking Config file   : \033[1;92mDone.\033[0m"
 fi
 
 if [ ! -f $dnsFile ]; then
-    echo -e -n "Checking Conf DNS file : \033[1;91mFail, creating new: \033[0m"
+    echo -e -n "Checking DNS conf file : \033[1;91mFail, creating new: \033[0m"
     createDNSfile
     echo -e "\033[1;92mDone.\033[0m"
 else
-	echo -e "Checking Conf DNS file : \033[1;92mDone.\033[0m"
+	echo -e "Checking DNS conf file : \033[1;92mDone.\033[0m"
 fi
 
 if [ ! -f $alarmFile ]; then
-    echo -e "Checking Alarm file : \033[1;91mFail\033[0m, Downloading."
+    echo -e "Checking Alarm file    : \033[1;91mFail\033[0m, Downloading."
 	curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" --progress-bar https://raw.githubusercontent.com/ClawsPT/meoConnect/main/alarm.mp3 -o "$alarmFile"
 	echo -e "Download: \033[1;92mDone.\033[0m"
 else
-	echo -e "Checking Alarm file : \033[1;92mDone.\033[0m"
+	echo -e "Checking Alarm file    : \033[1;92mDone.\033[0m"
 fi
 
 source $confFile

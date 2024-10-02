@@ -1,10 +1,11 @@
 #!/bin/bash
 
-version='0.515'
+version='0.517'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
 dnsFile=$HOME/.config/meoConnect/${0##*/}.dns
+alarmFile=$HOME/.config/meoConnect/${0##*/}.mp3
 forceSynctime=0
 remLine=false
 
@@ -383,7 +384,7 @@ editSettings () {
 			echo "Reloading script"
 			sleep 1
 			exec $SCRIPT_DIR/meoConnect.sh 
-			mpg321 -q $SCRIPT_DIR/alarm.mp3
+			mpg321 -q $alarmFile
 		fi
 	fi
 }
@@ -511,7 +512,7 @@ checkUpdate () {
 		echo -e "Download: \033[1;92mDone.\033[0m"
 		chmod +x "$SCRIPT_DIR/"${0##*/}
 		echo "Restarting script."
-		mpg321 -q $SCRIPT_DIR/alarm.mp3
+		mpg321 -q $alarmFile
 		sleep 5
 		exec "$SCRIPT_DIR/"${0##*/}
 	fi
@@ -549,6 +550,14 @@ if [ ! -f $dnsFile ]; then
     echo -e "\033[1;92mDone.\033[0m"
 else
 	echo -e "Checking Conf DNS file : \033[1;92mDone.\033[0m"
+fi
+
+if [ ! -f $alarmFile ]; then
+    echo -e -n "Checking Alarm file : \033[1;91mFail, Downloading: \033[0m"
+	curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" --progress-bar https://raw.githubusercontent.com/ClawsPT/meoConnect/main/alarm.mp3 -o "$alarmFile"
+	echo -e "Download: \033[1;92mDone.\033[0m"
+else
+	echo -e "Checking Alarm file : \033[1;92mDone.\033[0m"
 fi
 
 source $confFile
@@ -708,7 +717,7 @@ while true ; do
 		
 		echo "-------------------------------------------------------------------------------"
 		echo -e "    \033[1;91mOFFLINE\033[0m - $(date "+%H:%M:%S") | $connectionVer | T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime))) | $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
-		mpg321 -q $SCRIPT_DIR/alarm.mp3
+		mpg321 -q $alarmFile
 		echo "-------------------------------------------------------------------------------"
 		forceSynctime=1
 		vpnDisconnect
@@ -805,7 +814,7 @@ while true ; do
 		elif [[ $skip = "r" ]]; then
 			echo "Reloading script"
 			sleep 1
-			mpg321 -q $SCRIPT_DIR/alarm.mp3
+			mpg321 -q $alarmFile
 			exec "$SCRIPT_DIR/"${0##*/}
 			exit
 		fi	

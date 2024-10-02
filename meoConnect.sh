@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.517'
+version='0.518'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -553,7 +553,7 @@ else
 fi
 
 if [ ! -f $alarmFile ]; then
-    echo -e -n "Checking Alarm file : \033[1;91mFail, Downloading: \033[0m"
+    echo -e "Checking Alarm file : \033[1;91mFail\033[0m, Downloading."
 	curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" --progress-bar https://raw.githubusercontent.com/ClawsPT/meoConnect/main/alarm.mp3 -o "$alarmFile"
 	echo -e "Download: \033[1;92mDone.\033[0m"
 else

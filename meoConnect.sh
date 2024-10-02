@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.514'
+version='0.515'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -598,12 +598,12 @@ if [[ "$netStatus" ]]; then
 		if $vpn ; then
 			echo -e "Checking ProtonVPN     : \033[1;92mConnected.\033[0m"
 		else
-			echo -e -n "Checking ProtonVPN     : \033[1;91mWrong state, Disconecting.\033[0m: "
+			echo -e -n "Checking ProtonVPN     : \033[1;91mWrong state, \033[0mDisconecting: "
 			vpnDisconnect
 		fi	
 	else
 		if $vpn ; then
-			echo -e -n "Checking ProtonVPN     : \033[1;91mWrong state, Conecting.\033[0m: "
+			echo -e -n "Checking ProtonVPN     : \033[1;91mWrong state, \033[0m Conecting: "
 			vpnConnect
 		else
 			echo -e "Checking ProtonVPN     : \033[1;92mDisconnected.\033[0m"

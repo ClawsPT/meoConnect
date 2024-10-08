@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.521'
+version='0.522'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -710,7 +710,7 @@ while true ; do
 		if [ "$remLine" == "true" ] ; then
 			echo -ne '\e[1A\e[K'
 		fi
-		echo -n " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|\033[1;93m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m|U/D ${arrOUT[5]} ${arrOUT[6]}"
+		echo -n -e " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|\033[0;93m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m|U/D ${arrOUT[5]} ${arrOUT[6]}"
 		echo -n "|$serverName $serverLoad|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
 		echo $netStatus	
 	else

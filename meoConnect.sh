@@ -710,7 +710,7 @@ while true ; do
 		if [ "$remLine" == "true" ] ; then
 			echo -ne '\e[1A\e[K'
 		fi
-		echo -n " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")|U/D ${arrOUT[5]} ${arrOUT[6]}"
+		echo -n " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|\033[1;93m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m|U/D ${arrOUT[5]} ${arrOUT[6]}"
 		echo -n "|$serverName $serverLoad|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
 		echo $netStatus	
 	else

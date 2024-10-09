@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.522'
+version='0.523'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -198,6 +198,13 @@ vpnDisconnect () {
 }
 
 connectMeoWiFi () {
+		if [ "$connectionVer" == "v2" ] ; then
+			echo -n "Reconnecting WiFi..."
+			echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
+			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+		fi
+		
 		echo "Login into MEO WiFi...."
 		connect=$(connectMeoWiFiv1)
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then

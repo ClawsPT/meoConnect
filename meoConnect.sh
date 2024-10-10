@@ -1,11 +1,12 @@
 #!/bin/bash
 
-version='0.525'
+version='0.526'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
 dnsFile=$HOME/.config/meoConnect/${0##*/}.dns
 alarmFile=$HOME/.config/meoConnect/${0##*/}.mp3
+$OnlinCmd=$HOME/.config/meoConnect/${0##*/}.OnlinCmd
 forceSynctime=0
 remLine=false
 
@@ -560,7 +561,13 @@ if [ ! -f $dnsFile ]; then
 else
 	echo -e "Checking DNS conf file : \033[1;92mDone.\033[0m"
 fi
-
+if [ ! -f $OnlinCmd ]; then
+    echo -e -n "Checking OnlinCmd file : \033[1;91mFail, creating new: \033[0m"
+    touch $OnlinCmd
+    echo -e -n "\033[1;92mDone.\033[0m :"
+else
+	echo -e "Checking OnlinCmd file : \033[1;92mDone.\033[0m"
+fi
 if [ ! -f $alarmFile ]; then
     echo -e "Checking Alarm file    : \033[1;91mFail\033[0m, Downloading."
 	curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" --progress-bar https://raw.githubusercontent.com/ClawsPT/meoConnect/main/alarm.mp3 -o "$alarmFile"
@@ -803,7 +810,7 @@ while true ; do
 			echo "------------------------------- TESTE -----------------------------------------"
 
 			
- 
+				$OnlinCmd 
  
  
 			echo "------------------------------- TESTE -----------------------------------------"

@@ -558,7 +558,7 @@ if [ ! -f $OLCmd ]; then
     chmod +x $OLCmd
     echo -e "\033[1;92mDone.\033[0m :"
 else
-	echo -e "Checking OLCmd file : \033[1;92mDone.\033[0m"
+	echo -e "Checking OLCmd file    : \033[1;92mDone.\033[0m"
 fi
 if [ ! -f $alarmFile ]; then
     echo -e "Checking Alarm file    : \033[1;91mFail\033[0m, Downloading."

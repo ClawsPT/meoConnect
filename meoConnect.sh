@@ -1,12 +1,12 @@
 #!/bin/bash
 
-version='0.531'
+version='0.532'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-confFile=$HOME/.config/meoConnect/${0##*/}.conf
-dnsFile=$HOME/.config/meoConnect/${0##*/}.dns
-alarmFile=$HOME/.config/meoConnect/${0##*/}.mp3
-OnlinCmd=$HOME/.config/meoConnect/${0##*/}.OnlinCmd
+confFile="$HOME/.config/meoConnect/${0##*/}.conf"
+dnsFile="$HOME/.config/meoConnect/${0##*/}.dns"
+alarmFile="$HOME/.config/meoConnect/${0##*/}.mp3"
+OLCmd="$HOME/.config/meoConnect/${0##*/}.OLCmd"
 forceSynctime=0
 remLine=false
 
@@ -374,7 +374,7 @@ editSettings () {
 # Text Editor
 	editor='geany'
 
-	echo "Note: To Change Command to run on successful login edit $onlinCmd"
+	echo "Note: To Change Command to run on successful login edit $OLCmd"
 	echo "Note: To Change DNS config edit $dnsFile"
 	echo ""
 
@@ -464,7 +464,7 @@ syncTime () {
 		starttime=$(($currenttime - $meoTime))
 		connectionVer='v1'
 		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"	
-		$($OnlinCmd $connectionVer)
+		$OLCmd $connectionVer
 		echo "-------------------------------------------------------------------------------"
 	else
 		echo -e "\033[1;91mv1: Fail.\033[0m"
@@ -487,8 +487,7 @@ syncTime () {
 			echo -e "\033[1;92mv2\033[0m: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
 			connectionVer='v2'
 			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"		
-			$onlinCmd $connectionVer
-			$($OnlinCmd $connectionVer)
+			echo $alarmFile $OLCmd $connectionVer
 			echo "-------------------------------------------------------------------------------"
 		else
 			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
@@ -553,13 +552,13 @@ if [ ! -f $dnsFile ]; then
 else
 	echo -e "Checking DNS conf file : \033[1;92mDone.\033[0m"
 fi
-if [ ! -f $OnlinCmd ]; then
-    echo -e -n "Checking OnlinCmd file : \033[1;91mFail, creating new: \033[0m"
-    touch $OnlinCmd
-    chmod +x $OnlinCmd
+if [ ! -f $OLCmd ]; then
+    echo -e -n "Checking OLCmd file : \033[1;91mFail, creating new: \033[0m"
+    touch $OLCmd
+    chmod +x $OLCmd
     echo -e "\033[1;92mDone.\033[0m :"
 else
-	echo -e "Checking OnlinCmd file : \033[1;92mDone.\033[0m"
+	echo -e "Checking OLCmd file : \033[1;92mDone.\033[0m"
 fi
 if [ ! -f $alarmFile ]; then
     echo -e "Checking Alarm file    : \033[1;91mFail\033[0m, Downloading."
@@ -803,7 +802,7 @@ while true ; do
 			echo "------------------------------- TESTE -----------------------------------------"
 
 			
-				$OnlinCmd $connectionVer
+				syncTime
  
  
 			echo "------------------------------- TESTE -----------------------------------------"

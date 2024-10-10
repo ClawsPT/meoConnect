@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.527'
+version='0.528'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -564,7 +564,7 @@ fi
 if [ ! -f $OnlinCmd ]; then
     echo -e -n "Checking OnlinCmd file : \033[1;91mFail, creating new: \033[0m"
     touch $OnlinCmd
-    echo -e -n "\033[1;92mDone.\033[0m :"
+    echo -e "\033[1;92mDone.\033[0m :"
 else
 	echo -e "Checking OnlinCmd file : \033[1;92mDone.\033[0m"
 fi

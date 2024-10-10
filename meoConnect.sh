@@ -1,12 +1,12 @@
 #!/bin/bash
 
-version='0.526'
+version='0.527'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
 dnsFile=$HOME/.config/meoConnect/${0##*/}.dns
 alarmFile=$HOME/.config/meoConnect/${0##*/}.mp3
-$OnlinCmd=$HOME/.config/meoConnect/${0##*/}.OnlinCmd
+OnlinCmd=$HOME/.config/meoConnect/${0##*/}.OnlinCmd
 forceSynctime=0
 remLine=false
 

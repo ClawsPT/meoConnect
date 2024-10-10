@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.529'
+version='0.530'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile=$HOME/.config/meoConnect/${0##*/}.conf
@@ -370,17 +370,11 @@ editSettings () {
 	if [ "$sTemp" ] ; then
 		connRetry=$sTemp
 	fi
-	
-# VPN max load %
-	echo -n "Command to run on successful login ($onlineCommand):"
-	read -r sTemp
-	if [ "$sTemp" ] ; then
-		onlineCommand=$sTemp
-	fi
 
 # Text Editor
 	editor='geany'
 
+	echo "Note: To Change Command to run on successful login edit $onlinCmd"
 	echo "Note: To Change DNS config edit $dnsFile"
 	echo ""
 
@@ -442,9 +436,6 @@ curlCmd='-s --interface $wifiif --connect-timeout 20 --max-time 10 -H "Cache-Con
 # Number of retries
 connRetry='$connRetry'
 
-#onlineCommand
-onlineCommand='$onlineCommand'
-
 EOF
 }
 
@@ -473,7 +464,7 @@ syncTime () {
 		starttime=$(($currenttime - $meoTime))
 		connectionVer='v1'
 		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"	
-		$onlineCommand> /dev/null 2>&1
+		$onlinCmd $connectionVer
 		echo "-------------------------------------------------------------------------------"
 	else
 		echo -e "\033[1;91mv1: Fail.\033[0m"
@@ -496,7 +487,7 @@ syncTime () {
 			echo -e "\033[1;92mv2\033[0m: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
 			connectionVer='v2'
 			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"		
-			$onlineCommand> /dev/null 2>&1
+			$onlinCmd $connectionVer
 			echo "-------------------------------------------------------------------------------"
 		else
 			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
@@ -811,7 +802,7 @@ while true ; do
 			echo "------------------------------- TESTE -----------------------------------------"
 
 			
-				$OnlinCmd 
+				$OnlinCmd $connectionVer
  
  
 			echo "------------------------------- TESTE -----------------------------------------"

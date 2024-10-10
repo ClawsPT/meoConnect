@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.532'
+version='0.533'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -553,7 +553,7 @@ else
 	echo -e "Checking DNS conf file : \033[1;92mDone.\033[0m"
 fi
 if [ ! -f $OLCmd ]; then
-    echo -e -n "Checking OLCmd file : \033[1;91mFail, creating new: \033[0m"
+    echo -e -n "Checking OLCmd file    : \033[1;91mFail, creating new: \033[0m"
     touch $OLCmd
     chmod +x $OLCmd
     echo -e "\033[1;92mDone.\033[0m :"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.536'
+version='0.537'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -374,7 +374,7 @@ editSettings () {
 # Text Editor
 	editor='geany'
 
-	echo "Note: To Change Command to run on successful login edit $OLCmd"
+	echo "Note: To Change Command to run on successful login edit $OLCmd/n      two values are sent to the scrip/n      1-Conn Version, 2-BSSID"
 	echo "Note: To Change DNS config edit $dnsFile"
 	echo ""
 
@@ -465,7 +465,7 @@ syncTime () {
 		connectionVer='v1'
 		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"	
 		echo -n -e "Running OLCmd          : \033[0;96m"
-		$OLCmd $connectionVer
+		$OLCmd $connectionVer $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')
 		echo -e "\033[1;92m                       : Done.\033[0m"
 		echo "-------------------------------------------------------------------------------"
 	else
@@ -490,7 +490,7 @@ syncTime () {
 			connectionVer='v2'
 			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"		
 			echo -n -e "Running OLCmd          : \033[0;96m"
-			$OLCmd $connectionVer
+			$OLCmd $connectionVer $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')
 			echo -e "\033[1;92m                       : Done.\033[0m"
 			echo "-------------------------------------------------------------------------------"
 		else

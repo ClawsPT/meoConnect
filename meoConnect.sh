@@ -492,7 +492,6 @@ syncTime () {
 			echo -n -e "Running OLCmd          : \033[0;96m"
 			$OLCmd $connectionVer
 			echo -e "\033[1;92m                       : Done.\033[0m"
-			$OLCmd $connectionVer
 			echo "-------------------------------------------------------------------------------"
 		else
 			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)

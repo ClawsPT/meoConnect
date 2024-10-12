@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.537'
+version='0.538'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -374,7 +374,11 @@ editSettings () {
 # Text Editor
 	editor='geany'
 
-	echo -e "Note: To Change Command to run on successful login edit $OLCmd/n      two values are sent to the scrip/n      1-Conn Version, 2-BSSID"
+	echo "Note: To Change Command to run on successful login edit"
+	echo "    : $OLCmd"
+	echo "    : two values are sent to the scrip"
+	echo "    : 1-Conn Version, 2-BSSID"
+	echo ""
 	echo "Note: To Change DNS config edit $dnsFile"
 	echo ""
 

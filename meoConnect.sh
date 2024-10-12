@@ -374,7 +374,7 @@ editSettings () {
 # Text Editor
 	editor='geany'
 
-	echo "Note: To Change Command to run on successful login edit $OLCmd/n      two values are sent to the scrip/n      1-Conn Version, 2-BSSID"
+	echo -e "Note: To Change Command to run on successful login edit $OLCmd/n      two values are sent to the scrip/n      1-Conn Version, 2-BSSID"
 	echo "Note: To Change DNS config edit $dnsFile"
 	echo ""
 

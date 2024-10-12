@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.535'
+version='0.536'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -464,8 +464,9 @@ syncTime () {
 		starttime=$(($currenttime - $meoTime))
 		connectionVer='v1'
 		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"	
-		echo -n "Running OLCmd          : "
+		echo -n -e "Running OLCmd          : \033[0;96m"
 		$OLCmd $connectionVer
+		echo -e "\033[1;92m                       : Done.\033[0m"
 		echo "-------------------------------------------------------------------------------"
 	else
 		echo -e "\033[1;91mv1: Fail.\033[0m"
@@ -488,7 +489,9 @@ syncTime () {
 			echo -e "\033[1;92mv2\033[0m: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
 			connectionVer='v2'
 			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"		
-			echo -n "Running OLCmd          : "
+			echo -n -e "Running OLCmd          : \033[0;96m"
+			$OLCmd $connectionVer
+			echo -e "\033[1;92m                       : Done.\033[0m"
 			$OLCmd $connectionVer
 			echo "-------------------------------------------------------------------------------"
 		else

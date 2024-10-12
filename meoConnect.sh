@@ -503,19 +503,22 @@ checkUpdate () {
 
 	echo -n "Checking for updates   : "
 	gitVer=$(curl $curlCmd https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -s -r 13-28 | grep "version")
-	
-	if [ "$gitVer" == "version='$version'" ] ; then
-		echo -e "\033[1;92mUpdated.\033[0m ($gitVer)"
+	if [ "$gitVer" ] ; then
+		if [ "$gitVer" == "version='$version'" ] ; then
+			echo -e "\033[1;92mUpdated.\033[0m ($gitVer)"
+		else
+			echo -e "\033[1;92mUpdate found.\033[0m ($gitVer)"
+			echo -e "Downloading update."
+			curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" --progress-bar https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -o "$SCRIPT_DIR/${0##*/}"
+			echo -e "Download: \033[1;92mDone.\033[0m"
+			chmod +x "$SCRIPT_DIR/"${0##*/}
+			echo "Restarting script."
+			mpg321 -q $alarmFile
+			sleep 5
+			exec "$SCRIPT_DIR/"${0##*/}
+		fi
 	else
-		echo -e "\033[1;92mUpdate found.\033[0m ($gitVer)"
-		echo -e "Downloading update."
-		curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" --progress-bar https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -o "$SCRIPT_DIR/${0##*/}"
-		echo -e "Download: \033[1;92mDone.\033[0m"
-		chmod +x "$SCRIPT_DIR/"${0##*/}
-		echo "Restarting script."
-		mpg321 -q $alarmFile
-		sleep 5
-		exec "$SCRIPT_DIR/"${0##*/}
+		echo -e "\033[1;91mFail to check.\033[0m"
 	fi
 }
 

@@ -199,12 +199,12 @@ vpnDisconnect () {
 }
 
 connectMeoWiFi () {
-		if [ "$connectionVer" == "v2" ] ; then
-			echo "Reconnecting to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
-			echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
-		fi
+		#if [ "$connectionVer" == "v2" ] ; then
+			#echo "Reconnecting to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
+			#echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
+			#echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+			#nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+		#fi
 		
 		echo "Login into MEO WiFi...."
 		connect=$(connectMeoWiFiv1)
@@ -231,6 +231,7 @@ connectMeoWiFi () {
 			connectMeoWiFi
 		else
 			echo -e "Someting went wrong: \033[1;91m$connect\033[0m"
+			sleep 2
 		# Get BSSID List.
 			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 			echo -n "Scanning for MEO WiFi networks: " 

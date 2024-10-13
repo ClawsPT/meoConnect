@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.540'
+version='0.541'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -199,12 +199,12 @@ vpnDisconnect () {
 }
 
 connectMeoWiFi () {
-		#if [ "$connectionVer" == "v2" ] ; then
-			#echo "Reconnecting to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
-			#echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-			#echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-			#nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
-		#fi
+		if [ "$connectionVer" == "v2" ] ; then
+			echo "Reconnecting to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
+			echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
+			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+		fi
 		
 		echo "Login into MEO WiFi...."
 		connect=$(connectMeoWiFiv1)
@@ -273,11 +273,16 @@ connectMeoWiFiv1 () {
 		json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/Login?username="$user"&password="$encPwd"&navigatorLang=pt")
 		connRetryTemp=$(expr $connRetryTemp - 1 )
 	done
-	error=$(echo $json | jq '.error')
-	if [[ "$error" ]]; then
-		echo "$error"
+
+	if [[ $(echo $json | grep "unavailable" ) ]] ; then
+		echo '"OUT OF REACH"'
 	else
-		echo "Connection timeout. $json"
+		error=$(echo $json | jq '.error')
+		if [[ "$error" ]]; then
+			echo "$error"
+		else
+			echo "Connection timeout. $json"
+		fi
 	fi
 }
 
@@ -459,6 +464,12 @@ syncTime () {
 	remLine=false
 	while [[ ! "$meoTime" ]] ;do	 
 		json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
+		
+		if [[ $(echo $json | grep "unavailable" ) ]] ; then
+			echo "----------------- Debug: $json"
+			json=""
+		fi
+
 		json=$(echo $json | jq '.Consumption')
 		meoTime=$(echo $json | jq -r '.Time')
 	done
@@ -651,7 +662,7 @@ echo -e "-----------------------------------------------------------------------
 
 clear
 echo "-------------------------------------------------------------------------------"
-echo "|                        MEO Wifi AutoConnect v$version                          |"
+echo "|                        MEO Wifi AutoConnect v$version                     grep     |"
 echo "-------------------------------------------------------------------------------"
 startUp
 

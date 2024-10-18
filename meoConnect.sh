@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.542'
+version='0.543'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -223,9 +223,10 @@ connectMeoWiFi () {
 			connectMeoWiFiv2
 			connectionVer='v2'
 			remLine=false
-		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == '"The service is unavailable."' ] ; then
+		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == "Unavailable" ] ; then
 			echo -e "Someting went wrong, retrying in 5s... \033[1;91m$connect\033[0m"
 			sleep 5
+			echo -e "-----------\n$json ----------\n"
 			forceSynctime=1
 			remLine=false
 			connectMeoWiFi
@@ -275,7 +276,7 @@ connectMeoWiFiv1 () {
 	done
 
 	if [[ $(echo $json | grep "unavailable" ) ]] ; then
-		echo '"OUT OF REACH"'
+		echo '"Unavailable"'
 	else
 		error=$(echo $json | jq '.error')
 		if [[ "$error" ]]; then

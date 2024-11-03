@@ -200,7 +200,7 @@ vpnDisconnect () {
 }
 
 connectMeoWiFi () {
-		mpg321 -q $OnlineFile & > /dev/null
+		mpg321 -q $OnlineFile > /dev/null 2>&1 &
 		if [ "$connectionVer" == "v2" ] ; then
 			echo "Reconnecting to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 			#echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
@@ -836,7 +836,7 @@ while true ; do
 			echo "------------------------------- TESTE -----------------------------------------"
 
 			
-				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+				mpg321 -q $OnlineFile > /dev/null 2>&1 &
  
  
 			echo "------------------------------- TESTE -----------------------------------------"

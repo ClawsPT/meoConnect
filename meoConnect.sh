@@ -1,11 +1,12 @@
 #!/bin/bash
 
-version='0.543'
+version='0.544'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
 dnsFile="$HOME/.config/meoConnect/${0##*/}.dns"
-alarmFile="$HOME/.config/meoConnect/${0##*/}.mp3"
+OfflineFile="$HOME/.config/meoConnect/${0##*/}.offline.mp3"
+OnlineFile="$HOME/.config/meoConnect/${0##*/}.online.mp3"
 OLCmd="$HOME/.config/meoConnect/${0##*/}.OLCmd"
 forceSynctime=0
 remLine=false
@@ -199,6 +200,7 @@ vpnDisconnect () {
 }
 
 connectMeoWiFi () {
+		mpg321 -q $OnlineFile & > /dev/null
 		if [ "$connectionVer" == "v2" ] ; then
 			echo "Reconnecting to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 			#echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
@@ -223,7 +225,7 @@ connectMeoWiFi () {
 			connectMeoWiFiv2
 			connectionVer='v2'
 			remLine=false
-		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == "Unavailable" ] ; then
+		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == "unavailable" ] ; then
 			echo -e "Someting went wrong, retrying in 5s... \033[1;91m$connect\033[0m"
 			sleep 5
 			echo -e "-----------\n$json ----------\n"
@@ -398,7 +400,7 @@ editSettings () {
 			echo "Reloading script"
 			sleep 1
 			exec $SCRIPT_DIR/meoConnect.sh 
-			mpg321 -q $alarmFile
+			mpg321 -q $OfflineFile
 		fi
 	fi
 }
@@ -533,7 +535,7 @@ checkUpdate () {
 			echo -e "Download: \033[1;92mDone.\033[0m"
 			chmod +x "$SCRIPT_DIR/"${0##*/}
 			echo "Restarting script."
-			mpg321 -q $alarmFile
+			mpg321 -q $OfflineFile
 			sleep 5
 			exec "$SCRIPT_DIR/"${0##*/}
 		fi
@@ -585,12 +587,19 @@ if [ ! -f $OLCmd ]; then
 else
 	echo -e "Checking OLCmd file    : \033[1;92mDone.\033[0m"
 fi
-if [ ! -f $alarmFile ]; then
-    echo -e "Checking Alarm file    : \033[1;91mFail\033[0m, Downloading."
-	curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" --progress-bar https://raw.githubusercontent.com/ClawsPT/meoConnect/main/alarm.mp3 -o "$alarmFile"
+if [ ! -f $OfflineFile ]; then
+    echo -e "Checking Offline MP3   : \033[1;91mFail\033[0m, Downloading."
+	curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" --progress-bar https://raw.githubusercontent.com/ClawsPT/meoConnect/main/offline.mp3 -o "$OfflineFile"
 	echo -e "Download: \033[1;92mDone.\033[0m"
 else
-	echo -e "Checking Alarm file    : \033[1;92mDone.\033[0m"
+	echo -e "Checking Offline MP3   : \033[1;92mDone.\033[0m"
+fi
+if [ ! -f $OnlineFile ]; then
+    echo -e "Checking Online MP3    : \033[1;91mFail\033[0m, Downloading."
+	curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" --progress-bar https://raw.githubusercontent.com/ClawsPT/meoConnect/main/online.mp3 -o "$OnlineFile"
+	echo -e "Download: \033[1;92mDone.\033[0m"
+else
+	echo -e "Checking Online MP3    : \033[1;92mDone.\033[0m"
 fi
 
 source $confFile
@@ -750,7 +759,7 @@ while true ; do
 		
 		echo "-------------------------------------------------------------------------------"
 		echo -e "    \033[1;91mOFFLINE\033[0m - $(date "+%H:%M:%S") | $connectionVer | T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime))) | $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
-		mpg321 -q $alarmFile
+		mpg321 -q $OfflineFile
 		echo "-------------------------------------------------------------------------------"
 		forceSynctime=1
 		vpnDisconnect
@@ -847,7 +856,7 @@ while true ; do
 		elif [[ $skip = "r" ]]; then
 			echo "Reloading script"
 			sleep 1
-			mpg321 -q $alarmFile
+			mpg321 -q $OfflineFile
 			exec "$SCRIPT_DIR/"${0##*/}
 			exit
 		fi	

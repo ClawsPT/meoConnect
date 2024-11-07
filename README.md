@@ -1,8 +1,8 @@
 ... Work in progress ...
 
-Autoconnect for MEO-WiFi HotSpot
+Autoconnect for MEO-WiFi HotSpots
 
-Testing new login webpage
+working with both login pages.
 
 Special thanks to ravemir
 https://github.com/ravemir/meo-wifi-login

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.547'
+version='0.548'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -806,7 +806,7 @@ while true ; do
 				echo -e "\033[1;92mDone.\033[0m $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) APs found."
 	
 			# Connecting to BSSID list.
-				echo "     # |      BSSID       |Chan| Signal   "
+				echo "     # |            BSSID       |Chan| Signal   "
 				cat -b $HOME/.config/meoConnect/${0##*/}.lst
 				read -p "connect to: " lineNumber
 				
@@ -838,10 +838,12 @@ while true ; do
 
 			
 				mpg321 -q $OnlineFile > /dev/null 2>&1 &
- 
+
  
 			echo "------------------------------- TESTE -----------------------------------------"
 # ----------------------------------------------- TESTE -----------------------------------------
+		elif [[ $skip = "u" ]]; then
+			checkUpdate
 		elif [[ $skip = "s" ]]; then
 			echo "-------------------------------------------------------------------------------"
 			json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")

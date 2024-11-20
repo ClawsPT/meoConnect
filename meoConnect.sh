@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.551'
+version='0.552'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -801,16 +801,17 @@ while true ; do
 				echo -n "Scanning WiFi networks: " 				
 				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 				echo $rPasswd | sudo -S nmcli --fields SSID,BSSID,CHAN,BARS,SIGNAL device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" | sort > $HOME/.config/meoConnect/${0##*/}.lst
-				sed -i 's/MEO-WiFi             //g' $HOME/.config/meoConnect/${0##*/}.lst
+				#sed -i 's/MEO-WiFi             //g' $HOME/.config/meoConnect/${0##*/}.lst
 				#sed -i 's/  //g' $HOME/.config/meoConnect/${0##*/}.lst
 				echo -e "\033[1;92mDone.\033[0m $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) APs found."
 	
 			# Connecting to BSSID list.
-				echo "     # |            BSSID       |Chan| Signal   "
+				echo "     # |                 BSSID                     |Chan| Signal   "
 				cat -b $HOME/.config/meoConnect/${0##*/}.lst
 				read -p "connect to: " lineNumber
 				
 				bssid=$(sed -n "$lineNumber"p $HOME/.config/meoConnect/${0##*/}.lst)
+				bssid=$(echo $bssid | sed -n 's/.*MEO-WiFi \([0-9\:A-F]\{17\}\).*/\1/p')
 				bssid=$(echo $bssid | cut -c1-17)
 				echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
 				echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1

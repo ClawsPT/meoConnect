@@ -524,7 +524,7 @@ syncTime () {
 checkUpdate () {
 
 	echo -n "Checking for updates   : "
-	gitVer=$(curl $curlCmd https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -s -r 13-28 | grep "version")
+	gitVer=$(curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -s -r 13-28 | grep "version")
 	if [ "$gitVer" ] ; then
 		if [ "$gitVer" == "version='$version'" ] ; then
 			echo -e "\033[1;92mUpdated.\033[0m ($gitVer)"

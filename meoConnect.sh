@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.553'
+version='0.554'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -532,6 +532,8 @@ checkUpdate () {
 			echo -e "\033[1;92mUpdate found.\033[0m ($gitVer)"
 			echo -e "Downloading update."
 			curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" --progress-bar https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -o "$SCRIPT_DIR/${0##*/}"
+			curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" --progress-bar https://raw.githubusercontent.com/ClawsPT/meoConnect/main/offline.mp3 -o "$OfflineFile"
+			curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" --progress-bar https://raw.githubusercontent.com/ClawsPT/meoConnect/main/online.mp3 -o "$OnlineFile"			
 			echo -e "Download: \033[1;92mDone.\033[0m"
 			chmod +x "$SCRIPT_DIR/"${0##*/}
 			echo "Restarting script."

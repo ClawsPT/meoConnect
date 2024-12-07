@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.558'
+version='0.560'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -754,7 +754,7 @@ while true ; do
 		if [ "$remLine" == "true" ] ; then
 			echo -ne '\e[1A\e[K'
 		fi
-		echo -n -e " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|\033[0;93m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m|D ${arrOUT[1]}${arrOUT[2]}|U ${arrOUT[3]}${arrOUT[4]}"
+		echo -n -e " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|\033[0;93m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m|UD: ${arrOUT[5]}${arrOUT[6]}"
 		echo -n "|$serverName $serverLoad|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
 		echo $netStatus	
 	else
@@ -852,10 +852,21 @@ while true ; do
 		elif [[ $skip = "s" ]]; then
 			echo "-------------------------------------------------------------------------------"
 			json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
+			IN=$(vnstat $wifiif -d | (tail -n3))
+			INR=${IN//estimated}
+			arrOUT=(${INR//|/ })
 			echo "Corrent connection: $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 			json=$(echo $json | jq -r '.Consumption')
-			echo "DownstreamMB: $(echo $json | jq -r '.DownstreamMB')"
-			echo "UpstreamMB: $(echo $json | jq -r '.UpstreamMB')"
+			echo "Traffic:"
+			echo "    Meo:"
+			echo "        DownstreamMB: $(echo $json | jq -r '.DownstreamMB')"
+			echo "        UpstreamMB  : $(echo $json | jq -r '.UpstreamMB')"
+			echo "    VnStat (today):"
+			echo "        Downsteam: ${arrOUT[1]}${arrOUT[2]}"
+			echo "        Upstream : ${arrOUT[3]}${arrOUT[4]}"
+			echo "        Total    : ${arrOUT[5]}${arrOUT[6]}"
+			echo "        Speed    : ${arrOUT[7]}${arrOUT[8]}"
+			echo ""
 			syncTime
 			echo ""
 			remLine=false

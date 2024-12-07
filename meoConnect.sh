@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.557'
+version='0.558'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -740,6 +740,7 @@ while true ; do
 		IN=$(vnstat $wifiif -d | (tail -n3))
 		INR=${IN//estimated}
 		arrOUT=(${INR//|/ })
+		
 	#Get time from server.
 		if [ $forceSynctime = 1 ] ; then
 			syncTime
@@ -753,7 +754,7 @@ while true ; do
 		if [ "$remLine" == "true" ] ; then
 			echo -ne '\e[1A\e[K'
 		fi
-		echo -n -e " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|\033[0;93m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m|U/D ${arrOUT[5]} ${arrOUT[6]}"
+		echo -n -e " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|\033[0;93m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m|D ${arrOUT[1]}${arrOUT[2]}|U ${arrOUT[3]}${arrOUT[4]}"
 		echo -n "|$serverName $serverLoad|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
 		echo $netStatus	
 	else

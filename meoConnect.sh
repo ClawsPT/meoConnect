@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.560'
+version='0.561'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -857,6 +857,7 @@ while true ; do
 			arrOUT=(${INR//|/ })
 			echo "Corrent connection: $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 			json=$(echo $json | jq -r '.Consumption')
+			echo ""
 			echo "Traffic:"
 			echo "    Meo:"
 			echo "        DownstreamMB: $(echo $json | jq -r '.DownstreamMB')"

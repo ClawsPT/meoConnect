@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.562'
+version='0.563'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -871,6 +871,7 @@ while true ; do
 			echo ""
 			checkUpdate
 			#syncTime
+			echo "-------------------------------------------------------------------------------"
 			echo ""
 			remLine=false
 		elif [[ $skip = "q" ]]; then

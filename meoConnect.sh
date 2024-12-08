@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.563'
+version='0.564'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -846,6 +846,8 @@ while true ; do
 
  
 			echo "------------------------------- TESTE -----------------------------------------"
+			echo ""
+			skip="f"
 # ----------------------------------------------- TESTE -----------------------------------------
 		elif [[ $skip = "u" ]]; then
 			checkUpdate
@@ -862,7 +864,7 @@ while true ; do
 			echo "    Meo:"
 			echo "        DownstreamMB   : $(echo $json | jq -r '.DownstreamMB')"
 			echo "        UpstreamMB     : $(echo $json | jq -r '.UpstreamMB')"
-			echo "        Connection time:$(echo $json | jq -r '.Time'):00"
+			echo "        Connection time: $(echo $json | jq -r '.Time'):00"
 			echo "    VnStat (today):"
 			echo "        Downsteam: ${arrOUT[1]}${arrOUT[2]}"
 			echo "        Upstream : ${arrOUT[3]}${arrOUT[4]}"
@@ -873,7 +875,7 @@ while true ; do
 			#syncTime
 			echo "-------------------------------------------------------------------------------"
 			echo ""
-			remLine=false
+			skip="f"
 		elif [[ $skip = "q" ]]; then
 			exit
 		elif [[ $skip = "r" ]]; then

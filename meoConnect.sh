@@ -860,15 +860,17 @@ while true ; do
 			echo ""
 			echo "Traffic:"
 			echo "    Meo:"
-			echo "        DownstreamMB: $(echo $json | jq -r '.DownstreamMB')"
-			echo "        UpstreamMB  : $(echo $json | jq -r '.UpstreamMB')"
+			echo "        DownstreamMB   : $(echo $json | jq -r '.DownstreamMB')"
+			echo "        UpstreamMB     : $(echo $json | jq -r '.UpstreamMB')"
+			echo "        Connection time:$(echo $json | jq -r '.Time'):00"
 			echo "    VnStat (today):"
 			echo "        Downsteam: ${arrOUT[1]}${arrOUT[2]}"
 			echo "        Upstream : ${arrOUT[3]}${arrOUT[4]}"
 			echo "        Total    : ${arrOUT[5]}${arrOUT[6]}"
 			echo "        Speed    : ${arrOUT[7]}${arrOUT[8]}"
 			echo ""
-			syncTime
+			checkUpdate
+			#syncTime
 			echo ""
 			remLine=false
 		elif [[ $skip = "q" ]]; then

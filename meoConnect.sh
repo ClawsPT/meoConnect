@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.564'
+version='0.565'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -813,27 +813,28 @@ while true ; do
 				echo "     # |                 BSSID                     |Chan| Signal   "
 				cat -b $HOME/.config/meoConnect/${0##*/}.lst
 				read -p "connect to: " lineNumber
-				
-				bssid=$(sed -n "$lineNumber"p $HOME/.config/meoConnect/${0##*/}.lst)
-				bssid=$(echo $bssid | sed -n 's/.*MEO-WiFi \([0-9\:A-F]\{17\}\).*/\1/p')
-				bssid=$(echo $bssid | cut -c1-17)
-				echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
-				echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-				echo -n "Connecting to $bssid: "
-				echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$bssid"
-				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
-				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
-				if [[ "$ip" != "" ]] ; then
-					echo -e "\033[1;92mDone.\033[0m"
-				else
-					echo -e "\033[1;91mFail.\033[0m"
+				if  [[ $lineNumber != "" ]]; then 
+					bssid=$(sed -n "$lineNumber"p $HOME/.config/meoConnect/${0##*/}.lst)
+					bssid=$(echo $bssid | sed -n 's/.*MEO-WiFi \([0-9\:A-F]\{17\}\).*/\1/p')
+					bssid=$(echo $bssid | cut -c1-17)
+					echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
+					echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
+					echo -n "Connecting to $bssid: "
+					echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$bssid"
+					echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+					nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+					ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+					if [[ "$ip" != "" ]] ; then
+						echo -e "\033[1;92mDone.\033[0m"
+					else
+						echo -e "\033[1;91mFail.\033[0m"
+					fi
+					
+					forceSynctime=1
+					remLine=false
+					connectMeoWiFi
+					break
 				fi
-				
-				forceSynctime=1
-				remLine=false
-				connectMeoWiFi
-				break
 
 		elif [[ $skip = "c" ]]; then
 			editSettings

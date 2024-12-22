@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.566'
+version='0.567'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -637,6 +637,7 @@ fi
 echo -n "Setting DNS server     : "
 setDNS
 echo -e "\033[1;92mDone.\033[0m"
+mpg321 -q $OnlineFile > /dev/null 2>&1 &
 echo -n "Checking Connection    : "
 netStatus=""
 netStatus=$(echo $(curl $curlCmd --head  --request GET www.google.com |grep "HTTP/"))

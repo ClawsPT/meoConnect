@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.567'
+version='0.568'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -694,7 +694,7 @@ while true ; do
 			echo "-------------------------------------------------------------------------------"
 			echo -e "    \033[1;91mOFFLINE\033[0m - $(date "+%H:%M:%S") - \033[1;92mRedirected to login portal\033[0m - $netStatus"
 			echo "-------------------------------------------------------------------------------"
-			mpg321 $OfflineFile > /dev/null 2>&1 &
+			mpg321 $OfflineFile > /dev/null 2>&1
 			connectMeoWiFi
 			sleep 5
 			forceSynctime=1
@@ -764,7 +764,7 @@ while true ; do
 		
 		echo "-------------------------------------------------------------------------------"
 		echo -e "    \033[1;91mOFFLINE\033[0m - $(date "+%H:%M:%S") | $connectionVer | T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime))) | $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
-		mpg321 $OfflineFile > /dev/null 2>&1 &
+		mpg321 $OfflineFile > /dev/null 2>&1
 		echo "-------------------------------------------------------------------------------"
 		forceSynctime=1
 		vpnDisconnect

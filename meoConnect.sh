@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.569'
+version='0.570'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -815,7 +815,7 @@ while true ; do
 			# Connecting to BSSID list.
 				echo "     # |                 BSSID                     |Chan| Signal   "
 				cat -b $HOME/.config/meoConnect/${0##*/}.lst
-				read -r -t 10 -p "connect to: " lineNumber
+				read -r -t 25 -p "connect to: " lineNumber
 				if  [[ $lineNumber != "" ]]; then 
 					bssid=$(sed -n "$lineNumber"p $HOME/.config/meoConnect/${0##*/}.lst)
 					bssid=$(echo $bssid | sed -n 's/.*MEO-WiFi \([0-9\:A-F]\{17\}\).*/\1/p')

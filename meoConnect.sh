@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.570'
+version='0.571'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -221,7 +221,7 @@ connectMeoWiFi () {
 			fi					
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
 			echo -e "Someting went wrong: \033[1;91m$connect\033[0m"
-			echo "Trying v2 login..."
+			echo -n "Trying v2 login: "
 			connectMeoWiFiv2
 			connectionVer='v2'
 			remLine=false
@@ -307,9 +307,9 @@ connectMeoWiFiv2 () {
 		login_body="{\"userName\":\"$user\",\"password\":\"$passwd\",\"ipAddress\":\"$ip\",\"sessionId\":\"$sessionId\",\"loginType\":\"login\"}"
 	# Send a POST request for login
 		response=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
-		echo "Connected using v2"
+		echo "\033[1;92mConnected.\033[0m"
 	else
-		echo "NO Session Id Found..."
+		echo "\033[1;91mNO Session Id Found...\033[0m"
 	fi
 }
 
@@ -646,7 +646,7 @@ if [[ $(echo $netStatus | grep "Moved") ]]; then #Moved -> redirected to login p
 fi
 
 if [[ "$netStatus" ]]; then
-	echo -e "\033[1;92mConnected\033[0m to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
+	echo -e "\033[1;92mConnected to\033[0m $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 	if [[ $(ifconfig | grep proton) ]] ; then
 		
 		if $vpn ; then

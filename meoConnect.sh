@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.571'
+version='0.572'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -307,9 +307,9 @@ connectMeoWiFiv2 () {
 		login_body="{\"userName\":\"$user\",\"password\":\"$passwd\",\"ipAddress\":\"$ip\",\"sessionId\":\"$sessionId\",\"loginType\":\"login\"}"
 	# Send a POST request for login
 		response=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
-		echo "\033[1;92mConnected.\033[0m"
+		echo -e "\033[1;92mConnected.\033[0m"
 	else
-		echo "\033[1;91mNO Session Id Found...\033[0m"
+		echo -e "\033[1;91mNO Session Id Found...\033[0m"
 	fi
 }
 

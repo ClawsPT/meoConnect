@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.573'
+version='0.574'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -221,7 +221,7 @@ connectMeoWiFi () {
 			fi					
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
 			echo -e "Someting went wrong    : \033[1;91m$connect\033[0m"
-			echo -n "Trying v2 login: "
+			echo -n "Trying v2 login        : "
 			connectMeoWiFiv2
 			connectionVer='v2'
 			remLine=false

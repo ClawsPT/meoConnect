@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.574'
+version='0.575'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -524,7 +524,7 @@ syncTime () {
 checkUpdate () {
 
 	echo -n "Checking for updates   : "
-	gitVer=$(curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -s -r 13-28 | grep "version")
+	gitVer=$(timeout --preserve-status -k 5 15 curl -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0" https://raw.githubusercontent.com/ClawsPT/meoConnect/main/meoConnect.sh -s -r 13-28 | grep "version")
 	if [ "$gitVer" ] ; then
 		if [ "$gitVer" == "version='$version'" ] ; then
 			echo -e "\033[1;92mUpdated.\033[0m ($gitVer)"

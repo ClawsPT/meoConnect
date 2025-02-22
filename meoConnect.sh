@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.575'
+version='0.576'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -503,7 +503,7 @@ syncTime () {
 		meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
 		if [ "$meoTime" != "null" ]; then
 			meoTime="${meoTime:11:8}"
-			starttime=$(date -d "1970-01-01 $meoTime Z" +%s)
+			starttime=$(date -d "1970-01-01 $meoTime Z" +%s)+3600
 			currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 			totaltime=$(($currenttime - $starttime))
 			echo -e "\033[1;92mv2\033[0m: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"

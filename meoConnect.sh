@@ -757,8 +757,7 @@ while true ; do
 		if [ "$remLine" == "true" ] ; then
 			echo -ne '\e[1A\e[K'
 		fi
-			     #$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
-			echo "$currenttime - $starttime = $totaltime"
+		
 		if [ $totaltime -gt 5400 ] ; then
 			CTime="\033[1;91m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
 		elif [ $totaltime -gt 3600 ] ; then

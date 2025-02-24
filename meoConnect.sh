@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.576'
+version='0.577'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -480,7 +480,7 @@ syncTime () {
 		meoTime="$meoTime:00"
 		echo -e "\033[1;92mv1\033[0m: $meoTime"
 		meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
-		currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
+		currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 		starttime=$(($currenttime - $meoTime))
 		connectionVer='v1'
 		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"	
@@ -503,8 +503,8 @@ syncTime () {
 		meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
 		if [ "$meoTime" != "null" ]; then
 			meoTime="${meoTime:11:8}"
-			starttime=$(date -d "1970-01-01 $meoTime Z" +%s)+3600
-			currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
+			starttime=$(date -d "$meoTime Z" +%s)
+			currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 			totaltime=$(($currenttime - $starttime))
 			echo -e "\033[1;92mv2\033[0m: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
 			connectionVer='v2'
@@ -514,7 +514,7 @@ syncTime () {
 			echo -e "\033[0m                       : \033[1;92mDone.\033[0m"
 			echo "-------------------------------------------------------------------------------"
 		else
-			starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
+			starttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 			echo -e "\033[1;91mv2: Fail.\033[0m"
 			echo "-------------------------------------------------------------------------------"
 		fi
@@ -684,7 +684,7 @@ startUp
 # -------------------------------- Start Loop ---------------------------------------
 
 while true ; do
-	currenttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
+	currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 	totaltime=$(($currenttime - $starttime))
 #-------------------------------- Check Connection ----------------------------------
 	netStatus=""
@@ -757,7 +757,17 @@ while true ; do
 		if [ "$remLine" == "true" ] ; then
 			echo -ne '\e[1A\e[K'
 		fi
-		echo -n -e " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|\033[0;93m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m|UD: ${arrOUT[5]}${arrOUT[6]}"
+			     #$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
+			echo "$currenttime - $starttime = $totaltime"
+		if [ $totaltime -gt 5400 ] ; then
+			CTime="\033[1;91m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
+		elif [ $totaltime -gt 3600 ] ; then
+			CTime="\033[1;93m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
+		else
+			CTime="\033[1;92m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
+		fi
+		
+		echo -n -e " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$CTime|UD: ${arrOUT[5]}${arrOUT[6]}"
 		echo -n "|$serverName $serverLoad|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
 		echo $netStatus	
 	else

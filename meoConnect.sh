@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.578'
+version='0.580'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -162,43 +162,6 @@ echo $(python3 -c "$PYCMD" -u $ip -p $passwd)
 	
 }
 
-vpnConnect () {
-	if [[ $(ifconfig | grep "proton") || $(ifconfig | grep "ipv6leakintrf") ]]; then
-		foo=$(timeout --preserve-status -k 5 30 protonvpn-cli d)
-	fi
-	vpnConn=$(timeout --preserve-status -k 5 45 protonvpn-cli connect --cc NL --protocol tcp | grep "Successfully connected")
-	if [[ "$vpnConn" ]]; then
-		serverStatus=$(protonvpn-cli s)
-		serverLoad=$(echo "$serverStatus" | grep "Server Load")
-		serverLoad=$(echo $serverLoad | grep -o -E '[0-9]+')
-		serverLoad="$serverLoad%"
-		serverName=$(echo "$serverStatus" | grep "Server:")
-		serverName=${serverName:10}
-		echo -e "\033[1;92mDone.\033[0m"
-	else
-		echo -e "\033[1;91mConnection failed.\033[0m"
-	fi
-}
-
-vpnDisconnect () {
-
-	echo -n "Disconnecting ProtonVPN: "
-	if [[ $(ifconfig | grep proton) ]] ; then
-		vpnDisConn=$(timeout --preserve-status -k 5 30 protonvpn-cli d | grep "Successfully disconnected")
-		if [[ "$vpnDisConn" ]]; then
-			echo -e "\033[1;92mSuccessfully disconnected.\033[0m"
-		else
-			echo -e "\033[1;92mTimedout. (This is normal)\033[0m"
-		fi		
-	else
-		echo "Not commected."
-	fi
-
-	echo -n "Setting DNS server: "
-	setDNS
-	echo -e "\033[1;92mDone.\033[0m"
-}
-
 connectMeoWiFi () {
 		mpg321 -q $OnlineFile > /dev/null 2>&1 &
 		if [ "$connectionVer" == "v2" ] ; then
@@ -212,13 +175,7 @@ connectMeoWiFi () {
 		connect=$(connectMeoWiFiv1)
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
 			echo -e "\033[1;92mSuccessfully connected\033[0m to MEO WiFi: $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
-			remLine=false
-		#Start VPN
-			if $vpn ; then
-				echo -n "Connecting to ProtonVPN: "
-				vpnConnect
-				remLine=false
-			fi					
+			remLine=false				
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
 			echo -e "Someting went wrong    : \033[1;91m$connect\033[0m"
 			echo -n "Trying v2 login        : "
@@ -359,20 +316,6 @@ editSettings () {
 		recheckTime=$sTemp
 	fi
 	
-# Use ProtonVPN
-	echo -n "Use ProtonVPN (true/false) ($vpn):"
-	read -r sTemp
-	if [ "$sTemp" ] ; then
-		vpn=$sTemp
-	fi
-	
-# VPN max load %
-	echo -n "VPN max load ($vpnMload):"
-	read -r sTemp
-	if [ "$sTemp" ] ; then
-		vpnMload=$sTemp
-	fi
-	
 # Number of retries
 	echo -n "Number of retries ($connRetry):"
 	read -r sTemp
@@ -434,12 +377,6 @@ passwd='$passwd'
 
 # Time in seconds between network checks
 recheckTime='$recheckTime'
-
-# Use ProtonVPN
-vpn='$vpn'
-
-# VPN max load %
-vpnMload='$vpnMload'
 
 # Text Editor
 editor='$editor'
@@ -607,7 +544,7 @@ fi
 source $confFile
 echo -e "Loading Configuration  : \033[1;92mDone.\033[0m"
 echo -n "Checking Dependencies  : "
-for name in protonvpn-cli geany mpg321 vnstat curl jq awk notify-send
+for name in geany mpg321 vnstat curl jq awk notify-send
 	do
 	  [[ $(which $name 2>/dev/null) ]] || { echo -en "\n$name needs to be installed. Use 'sudo apt-get install $name'";deps=1; }
 	done
@@ -647,22 +584,6 @@ fi
 
 if [[ "$netStatus" ]]; then
 	echo -e "\033[1;92mConnected to\033[0m $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
-	if [[ $(ifconfig | grep proton) ]] ; then
-		
-		if $vpn ; then
-			echo -e "Checking ProtonVPN     : \033[1;92mConnected.\033[0m"
-		else
-			echo -e -n "Checking ProtonVPN     : \033[1;91mWrong state, \033[0mDisconecting: "
-			vpnDisconnect
-		fi	
-	else
-		if $vpn ; then
-			echo -e -n "Checking ProtonVPN     : \033[1;91mWrong state, \033[0m Conecting: "
-			vpnConnect
-		else
-			echo -e "Checking ProtonVPN     : \033[1;92mDisconnected.\033[0m"
-		fi
-	fi
 	syncTime
 else
 	echo -e "\033[1;91mDisconnected.\033[0m"
@@ -709,35 +630,7 @@ while true ; do
 # ---------------------------------- ONLINE -----------------------------------------
 	
 	if [[ "$netStatus" ]]; then
-	#Get ProtonVPN server stats
-		if $vpn  ; then
-			serverStatus=$(protonvpn-cli s)
-			serverLoad=$(echo "$serverStatus" | grep "Server Load")
-			serverLoad=$(echo $serverLoad | grep -o -E '[0-9]+')
-			serverName=$(echo "$serverStatus" | grep "Server:")
-			serverName=${serverName:10}
-			if [[ ! "$serverLoad" ]]; then
-				if $vpn  ; then
-					echo -n "ProtonVPN is disconnected, reconnecting: "
-					vpnConnect
-					echo "-------------------------------------------------------------------------------"
-					remLine=false
-				else
-					serverLoad="Offline"
-				fi
-			elif [ $serverLoad -gt $vpnMload ]; then
-				echo "-------------------------------------------------------------------------------"
-				echo -n "VPN Load over $vpnMload % ($serverLoad%), connecting to new server: "
-				vpnConnect
-				echo "-------------------------------------------------------------------------------"
-				remLine=false
-			else
-				serverLoad="$serverLoad%"
-			fi
-		else
-			serverName="VPN"
-			serverLoad="Offline"
-		fi
+
 	#Get traffic and cpu
 		cpuuse=$(cat <(grep 'cpu ' /proc/stat) <(sleep 1 && grep 'cpu ' /proc/stat) | awk -v RS="" '{printf "%3.0f%\n", ($13-$2+$15-$4)*100/($13-$2+$15-$4+$16-$5)}')
 		IN=$(vnstat $wifiif -d | (tail -n3))
@@ -767,7 +660,7 @@ while true ; do
 		fi
 		
 		echo -n -e " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$CTime|UD: ${arrOUT[5]}${arrOUT[6]}"
-		echo -n "|$serverName $serverLoad|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
+		echo -n "|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
 		echo $netStatus	
 	else
 
@@ -778,8 +671,7 @@ while true ; do
 		mpg321 $OfflineFile > /dev/null 2>&1
 		echo "-------------------------------------------------------------------------------"
 		forceSynctime=1
-		vpnDisconnect
-	#Login into MEO-WiFi v1/v2
+		#Login into MEO-WiFi v1/v2
 		connectMeoWiFi
 		continue
 	fi
@@ -791,26 +683,13 @@ while true ; do
 	
 	while [ "$skip" != "f" -a "$skipTime" -ge 0 ] ;do
 		linkQuality=$(iwconfig wlan1 | awk -F= '/Quality/ {print $2}' | awk -F/ '{print $1}')
-		echo -n -e ">> T-$skipTime""s , S:$linkQuality% , \033[4;1mF\033[0morce , \033[4;1mV\033[0mPN , c\033[4;1mH\033[0mange AP , \033[4;1mC\033[0monfig , \033[4;1mS\033[0mtatus , \033[4;1mR\033[0meload , \033[4;1mQ\033[0muit <<"
+		echo -n -e ">> T-$skipTime""s , S:$linkQuality% , \033[4;1mF\033[0morce , c\033[4;1mH\033[0mange AP , \033[4;1mC\033[0monfig , \033[4;1mS\033[0mtatus , \033[4;1mR\033[0meload , \033[4;1mQ\033[0muit <<"
 		read -rsn1 -t 1 skip
 		echo -e -n "\r\033[K"
 		
 		if [[ $skip = "" ]]; then
 			skipTime=$(expr $skipTime - 1 )
-		elif [[ $skip = "v" ]]; then
-			echo "-------------------------------------------------------------------------------"
-			if ! $vpn ; then
-				echo -n "Connecing to ProtonVPN: "
-				vpnConnect
-				vpn=true
-				skip="f"
-			else
-				vpnDisconnect
-				vpn=false
-				skip="f"
-			fi
-			remLine=false
-			echo -e "-------------------------------------------------------------------------------\n"
+
 		elif [[ $skip = "h" ]]; then
 
 			# Get BSSID List.

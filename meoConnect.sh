@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.580'
+version='0.581'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -165,7 +165,7 @@ echo $(python3 -c "$PYCMD" -u $ip -p $passwd)
 connectMeoWiFi () {
 		mpg321 -q $OnlineFile > /dev/null 2>&1 &
 		if [ "$connectionVer" == "v2" ] ; then
-			echo "Reconnecting to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
+			echo "Connecting to $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 			#echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
 			#echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
@@ -659,7 +659,7 @@ while true ; do
 			CTime="\033[1;92m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
 		fi
 		
-		echo -n -e " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$CTime|UD: ${arrOUT[5]}${arrOUT[6]}"
+		echo -n -e " $connectionVer|T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime)))|$CTime|UpDown: ${arrOUT[5]}${arrOUT[6]}"
 		echo -n "|CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')"|"
 		echo $netStatus	
 	else

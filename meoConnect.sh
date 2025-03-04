@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.583'
+version='0.584'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -427,7 +427,7 @@ syncTime () {
 		echo "-------------------------------------------------------------------------------"
 	else
 		echo -e "\033[1;91mv1: Fail.\033[0m"
-		echo -n "                         "
+		echo -n "                       : "
 		ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 		ip=${ip%/*}	
 		url="https://meowifi.meo.pt/wifim-scl/service/session-status"

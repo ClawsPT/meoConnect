@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.587'
+version='0.588'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -171,19 +171,19 @@ connectMeoWiFi () {
 			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 		fi
 		
-		echo -n "Login to MEO WiFi v1    : "
+		echo -n "Login to MEO WiFi v1   : "
 		connect=$(connectMeoWiFiv1)
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
 			echo -e "\033[1;92mConnected.\033[0m"
 			remLine=false				
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
-			echo -e "033[1;91m$connect\033[0m"
+			echo -e "\033[1;91mOUT OF REACH\033[0m"
 			echo -n "Trying v2 login        : "
 			connectMeoWiFiv2
 			connectionVer='v2'
 			remLine=false
 		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == "unavailable" ] ; then
-			echo -e "\033[1;91m$connect\033[0m"
+			echo -e "\033[1;91mUnavailable\033[0m"
 			sleep 5
 			#echo -e "-----------\n$json ----------\n"
 			forceSynctime=1

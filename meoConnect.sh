@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.586'
+version='0.587'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -171,26 +171,26 @@ connectMeoWiFi () {
 			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 		fi
 		
-		echo "Login into MEO WiFi...."
+		echo -n "Login to MEO WiFi v1    : "
 		connect=$(connectMeoWiFiv1)
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
-			echo -e "\033[1;92mSuccessfully connected\033[0m to MEO WiFi: $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
+			echo -e "\033[1;92mConnected.\033[0m"
 			remLine=false				
 		elif [ "$connect" == '"OUT OF REACH"' ] ; then
-			echo -e "Someting went wrong    : \033[1;91m$connect\033[0m"
+			echo -e "033[1;91m$connect\033[0m"
 			echo -n "Trying v2 login        : "
 			connectMeoWiFiv2
 			connectionVer='v2'
 			remLine=false
 		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == "unavailable" ] ; then
-			echo -e "Someting went wrong, retrying in 5s...\n        \033[1;91m$connect\033[0m"
+			echo -e "\033[1;91m$connect\033[0m"
 			sleep 5
 			#echo -e "-----------\n$json ----------\n"
 			forceSynctime=1
 			remLine=false
 			connectMeoWiFi
 		else
-			echo -e "Someting went wrong: \033[1;91m$connect\033[0m"
+			echo -e "\033[1;91m$connect\033[0m"
 			sleep 2
 		# Get BSSID List.
 			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1

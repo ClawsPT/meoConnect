@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.588'
+version='0.589'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -615,7 +615,7 @@ while true ; do
 		netStatus=$(printf "$netStatus" | sed 's/\r//g' | sed 's/HTTP\/1.1 //g' | sed 's/HTTP\/1.0 //g')
 		if [[ $(echo $netStatus | grep "Moved") ]]; then #Moved -> redirected to login portal
 			echo "-------------------------------------------------------------------------------"
-			echo -e "\033[1;91m------ OFFLINE ------\033[0m  | $(date "+%H:%M:%S") | \033[1;92mRedirected to login portal\033[0m - $netStatus"
+			echo -e " \033[1;91m------ OFFLINE ------\033[0m | $(date "+%H:%M:%S") | \033[1;92mRedirected to login portal\033[0m - $netStatus"
 			echo "-------------------------------------------------------------------------------"
 			mpg321 $OfflineFile > /dev/null 2>&1
 			connectMeoWiFi
@@ -734,7 +734,22 @@ while true ; do
 			echo "------------------------------- TESTE -----------------------------------------"
 
 			
-				mpg321 -q $OnlineFile > /dev/null 2>&1 &
+				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+				ip=${ip%/*}	
+				url="https://meowifi.meo.pt/wifim-scl/service/session-status"
+				body="{\"ipAddress\":\"$ip\"}"
+
+				# Send a POST request and parse the session ID from the JSON response
+				sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
+				sessionId=$(echo $sessionId | jq -r '.sessionId')
+					
+				# Construct the URL for session login
+					url="https://meowifi.meo.pt/wifim-scl/service/$sessionId/session-logoff"
+				# Construct the login request body
+
+					response=$(curl $curlCmd -X "$url")
+					echo -e "\033[1;92m$url.\033[0m"
+
 
  
 			echo "------------------------------- TESTE -----------------------------------------"

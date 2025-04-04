@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.591'
+version='0.592'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -598,7 +598,7 @@ echo -e "-----------------------------------------------------------------------
 
 clear
 echo "-------------------------------------------------------------------------------"
-echo "|                        MEO Wifi AutoConnect v$version              By: ClawsPT |"
+echo -e "|                        MEO Wifi AutoConnect v$version              By: Claws\033[1;91mP\033[1;92mT\033[0m |"
 echo "-------------------------------------------------------------------------------"
 startUp
 

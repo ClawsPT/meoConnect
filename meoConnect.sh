@@ -589,7 +589,7 @@ else
 	echo -e "\033[1;91mDisconnected.\033[0m"
 	starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 fi
-echo "    $(date "+%Y-%m-%d - %H:%M:%S") - Starting script"
+echo " $(date "+%Y-%m-%d - %H:%M:%S") | Starting script"
 echo -e "-------------------------------------------------------------------------------"
 
 }

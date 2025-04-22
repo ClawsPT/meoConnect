@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.600'
+version='0.601'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -684,7 +684,7 @@ while true ; do
 	while [ "$skip" != "f" -a "$skipTime" -ge 0 ] ;do
 		linkQuality=$(iwconfig wlan1 | awk -F= '/Quality/ {print $2}' | awk -F/ '{print $1}')
 	
-		echo -e -n ">>>>   T-$skipTime""s  S:$linkQuality%   \033[4;1mF\033[0morce   c\033[4;1mH\033[0mange AP   \033[4;1mC\033[0monfig ,  \033[4;1mS\033[0mtatus   \033[4;1mR\033[0meload   \033[4;1mQ\033[0muit <<<"
+		echo -e -n ">>>>   T-$skipTime""s  S:$linkQuality%   \033[4;1mF\033[0morce   c\033[4;1mH\033[0mange AP   \033[4;1mC\033[0monfig    \033[4;1mS\033[0mtatus   \033[4;1mR\033[0meload   \033[4;1mQ\033[0muit <<<"
 		
 		read -rsn1 -t 1 skip
 		echo -e -n "\r\033[K"	
@@ -735,21 +735,6 @@ while true ; do
 			echo "-----------------------:------- TESTE -----------------------------------------"
 
 			
-				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
-				ip=${ip%/*}	
-				url="https://meowifi.meo.pt/wifim-scl/service/session-status"
-				body="{\"ipAddress\":\"$ip\"}"
-
-				# Send a POST request and parse the session ID from the JSON response
-				sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
-				sessionId=$(echo $sessionId | jq -r '.sessionId')
-					
-				# Construct the URL for session login
-					url="https://meowifi.meo.pt/wifim-scl/service/$sessionId/session-logoff"
-				# Construct the login request body
-
-					response=$(curl $curlCmd -X "$url")
-					echo -e "\033[1;92m$url.\033[0m"
 
 
  

@@ -777,7 +777,7 @@ while true ; do
 					currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 					totaltime=$(($currenttime - $starttime))
 					echo ""
-					echo "    Meo:"
+					echo "    Meo: v2"
 					echo -e "        Connection time: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"			
 				else
 				echo ""

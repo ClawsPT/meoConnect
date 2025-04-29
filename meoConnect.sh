@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.601'
+version='0.603'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -746,18 +746,45 @@ while true ; do
 			checkUpdate
 		elif [[ $skip = "s" ]]; then
 			echo "-----------------------:-------------------------------------------------------"
-			json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
-			IN=$(vnstat $wifiif -d | (tail -n3))
-			INR=${IN//estimated}
-			arrOUT=(${INR//|/ })
-			echo "Corrent connection: $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
-			json=$(echo $json | jq -r '.Consumption')
-			echo ""
-			echo "Traffic:"
-			echo "    Meo:"
-			echo "        DownstreamMB   : $(echo $json | jq -r '.DownstreamMB')"
-			echo "        UpstreamMB     : $(echo $json | jq -r '.UpstreamMB')"
-			echo "        Connection time: $(echo $json | jq -r '.Time'):00"
+			if [ $connectionVer == "v1" ]; then
+				json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
+				IN=$(vnstat $wifiif -d | (tail -n3))
+				INR=${IN//estimated}
+				arrOUT=(${INR//|/ })
+				echo "Corrent connection: $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
+				json=$(echo $json | jq -r '.Consumption')
+				echo ""
+				echo "Traffic:"
+				echo "    Meo: v1"
+
+				echo "        DownstreamMB   : $(echo $json | jq -r '.DownstreamMB')"
+				echo "        UpstreamMB     : $(echo $json | jq -r '.UpstreamMB')"
+				echo "        Connection time: $(echo $json | jq -r '.Time'):00"
+			else
+				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+				ip=${ip%/*}	
+				url="https://meowifi.meo.pt/wifim-scl/service/session-status"
+				body="{\"ipAddress\":\"$ip\"}"
+
+				# Send a POST request and parse the session ID from the JSON response
+				sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
+				#echo $sessionId
+				sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
+				meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
+				if [ "$meoTime" != "null" ]; then
+					meoTime="${meoTime:11:8}"
+					starttime=$(date -d "$meoTime Z" +%s)
+					currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
+					totaltime=$(($currenttime - $starttime))
+					echo ""
+					echo "    Meo:"
+					echo -e "        Connection time: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"			
+				else
+				echo ""
+				echo "    Meo: v2"
+					echo -e "        Connection time: Fail"
+				fi
+			fi
 			echo "    VnStat (today):"
 			echo "        Downsteam: ${arrOUT[1]}${arrOUT[2]}"
 			echo "        Upstream : ${arrOUT[3]}${arrOUT[4]}"

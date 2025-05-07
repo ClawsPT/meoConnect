@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.603'
+version='0.605'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -176,12 +176,14 @@ connectMeoWiFi () {
 		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
 			echo -e "\033[1;92mConnected.\033[0m"
 			remLine=false				
-		elif [ "$connect" == '"OUT OF REACH"' ] ; then
+		elif [ "$connect" == '"OUT OF REACH"' ]  || [ "$connect" == "Access Denied!" ] ; then
 			echo -e "\033[1;91mOUT OF REACH\033[0m"
 			echo -n "Trying v2 login        : "
 			connectMeoWiFiv2
 			connectionVer='v2'
 			remLine=false
+			
+			
 		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == "unavailable" ] ; then
 			echo -e "\033[1;91mUnavailable\033[0m"
 			sleep 5
@@ -236,6 +238,8 @@ connectMeoWiFiv1 () {
 
 	if [[ $(echo $json | grep "unavailable" ) ]] ; then
 		echo '"Unavailable"'
+	elif [ "$json" == "Access Denied!" ] ; then
+		echo "Access Denied!"
 	else
 		error=$(echo $json | jq '.error')
 		if [[ "$error" ]]; then
@@ -406,9 +410,15 @@ syncTime () {
 		json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
 		
 		if [[ $(echo $json | grep "unavailable" ) ]] ; then
-			echo "----------------- Debug: $json"
-			json=""
+			echo -n "--- Debug: $json"
+			json="null"
 		fi
+		if [[ $(echo $json | grep "Access Denied!" ) ]] ; then
+			echo -n "--- Debug: $json "
+			json="null"
+		fi
+			
+
 
 		json=$(echo $json | jq '.Consumption')
 		meoTime=$(echo $json | jq -r '.Time')

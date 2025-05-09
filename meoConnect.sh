@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.605'
+version='0.606'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -177,7 +177,7 @@ connectMeoWiFi () {
 			echo -e "\033[1;92mConnected.\033[0m"
 			remLine=false				
 		elif [ "$connect" == '"OUT OF REACH"' ]  || [ "$connect" == "Access Denied!" ] ; then
-			echo -e "\033[1;91mOUT OF REACH\033[0m"
+			echo -e "\033[1;91mFail.\033[0m"
 			echo -n "Trying v2 login        : "
 			connectMeoWiFiv2
 			connectionVer='v2'
@@ -414,7 +414,7 @@ syncTime () {
 			json="null"
 		fi
 		if [[ $(echo $json | grep "Access Denied!" ) ]] ; then
-			echo -n "--- Debug: $json "
+			
 			json="null"
 		fi
 			
@@ -778,7 +778,9 @@ while true ; do
 
 				# Send a POST request and parse the session ID from the JSON response
 				sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
+				
 				#echo $sessionId
+				
 				sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
 				meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
 				if [ "$meoTime" != "null" ]; then

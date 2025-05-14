@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.606'
+version='0.607'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -661,9 +661,9 @@ while true ; do
 			echo -ne '\e[1A\e[K'
 		fi
 		
-		if [ $totaltime -gt 5400 ] ; then
+		if [ $totaltime -gt 6600 ] ; then
 			CTime="\033[1;91m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
-		elif [ $totaltime -gt 3600 ] ; then
+		elif [ $totaltime -gt 5400 ] ; then
 			CTime="\033[1;93m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
 		else
 			CTime="\033[1;92m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"

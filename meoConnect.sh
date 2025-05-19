@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.607'
+version='0.610'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -200,7 +200,11 @@ connectMeoWiFi () {
 			echo $rPasswd | sudo -S nmcli --fields SSID,BSSID device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
-			echo -e " $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) APs found. \033[1;92mDone.\033[0m"
+			APCount=$(echo -e " $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst)")
+			echo -e " $APCount APs found. \033[1;92mDone.\033[0m"
+			
+			if [ $APCount != 0 ] ; then
+
 			echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
 		# Connecting to BSSID list.	
 			bssid=""
@@ -218,6 +222,11 @@ connectMeoWiFi () {
 					echo -e "\033[1;91mFail.\033[0m"
 				fi
 			done <$HOME/.config/meoConnect/${0##*/}.lst	
+			else
+				echo "Debug . no aps found sleeping 30s."
+					sleep 30
+			
+			fi
 			forceSynctime=1
 			remLine=false
 			connectMeoWiFi
@@ -584,7 +593,7 @@ fi
 echo -n "Setting DNS server     : "
 setDNS
 echo -e "\033[1;92mDone.\033[0m"
-mpg321 -q $OnlineFile > /dev/null 2>&1 &
+#mpg321 -q $OnlineFile > /dev/null 2>&1 &
 echo -n "Checking Connection    : "
 netStatus=""
 netStatus=$(echo $(curl $curlCmd --head  --request GET www.google.com |grep "HTTP/"))

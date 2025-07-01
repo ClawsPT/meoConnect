@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.610'
+version='0.611'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -286,7 +286,7 @@ connectMeoWiFiv2 () {
 editSettings () {
 
 # User Password
-	echo -n "Please enter User password ($rPasswd):"
+	echo -n "Please enter Root password ($rPasswd):"
 	read -r sTemp
 	if [ "$sTemp" ] ; then
 		rPasswd=$sTemp

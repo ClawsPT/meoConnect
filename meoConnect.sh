@@ -454,7 +454,6 @@ syncTime () {
 
 		# Send a POST request and parse the session ID from the JSON response
 		sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
-		
 		sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
 		
 		meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
@@ -475,10 +474,14 @@ syncTime () {
 			echo -e "\033[1;91mv2: Fail.\033[0m"
 			echo "-----------------------:-------------------------------------------------------"
 		fi
-		echo "-----------------------:-------------------------------------------------------"
+		
+		
+		
 		echo "Debug:"
 		echo $sessionId
 		echo "-----------------------:-------------------------------------------------------"
+		
+		
 		
 	fi
 	}

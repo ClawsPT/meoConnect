@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.612'
+version='0.613'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -477,9 +477,9 @@ syncTime () {
 		
 		
 		
-		echo "Debug:"
-		echo $sessionId
-		echo "-----------------------:-------------------------------------------------------"
+		#echo "Debug:"
+		#echo $sessionId
+		#echo "-----------------------:-------------------------------------------------------"
 		
 		
 		

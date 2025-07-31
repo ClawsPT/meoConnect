@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.613'
+version='0.614'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -816,10 +816,10 @@ while true ; do
 				fi
 			fi
 			echo "    VnStat (today):"
-			echo "        Downsteam: ${arrOUT[1]}${arrOUT[2]}"
-			echo "        Upstream : ${arrOUT[3]}${arrOUT[4]}"
-			echo "        Total    : ${arrOUT[5]}${arrOUT[6]}"
-			echo "        Speed    : ${arrOUT[7]}${arrOUT[8]}"
+			echo "        Downstream: ${arrOUT[1]}${arrOUT[2]}"
+			echo "        Upstream  : ${arrOUT[3]}${arrOUT[4]}"
+			echo "        Total     : ${arrOUT[5]}${arrOUT[6]}"
+			echo "        Speed     : ${arrOUT[7]}${arrOUT[8]}"
 			echo ""
 			checkUpdate
 			#syncTime

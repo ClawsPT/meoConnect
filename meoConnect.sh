@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.614'
+version='0.615'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -762,8 +762,8 @@ while true ; do
 		elif [[ $skip = "t" ]]; then
 			echo "-----------------------:------- TESTE -----------------------------------------"
 
-			
-
+			echo -e "6600 - Red\n5400 - Yellow"
+			echo "Time: $totaltime"
 
  
 			echo "-----------------------:------- TESTE -----------------------------------------"

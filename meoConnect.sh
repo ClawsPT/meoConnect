@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.620'
+version='0.621'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -669,9 +669,6 @@ while true ; do
 		if [ $forceSynctime = 1 ] ; then
 			syncTime
 			totaltime=$(($currenttime - $starttime))
-			if [ $totaltime -lt 0 ] ; then 
-				totaltime=$(($totaltime + 86400))
-			fi
 			forceSynctime=0
 		fi
 	#Echo status line.
@@ -682,6 +679,10 @@ while true ; do
 			echo -ne '\e[1A\e[K'
 		fi
 		
+		if [ $totaltime -lt 0 ] ; then 
+			totaltime=$(($totaltime + 86400))
+		fi	
+			
 		if [ $totaltime -gt 6600 ] ; then
 			CTime="\033[1;91m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
 		elif [ $totaltime -gt 5400 ] ; then
@@ -831,7 +832,7 @@ while true ; do
 					echo ""
 					echo "    Meo: v2"
 					echo -e "        SessionID      : $(echo $sessionId | jq -r '.sessionId')"
-					echo -e "        Connection time: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"			
+					echo -e "        Connection time: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")  $totaltime"			
 				else
 				echo ""
 				echo "    Meo: v2"

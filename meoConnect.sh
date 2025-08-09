@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.615'
+version='0.620'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -669,6 +669,9 @@ while true ; do
 		if [ $forceSynctime = 1 ] ; then
 			syncTime
 			totaltime=$(($currenttime - $starttime))
+			if [ $totaltime -lt 0 ] ; then 
+				totaltime=$(($totaltime + 86400))
+			fi
 			forceSynctime=0
 		fi
 	#Echo status line.
@@ -761,11 +764,27 @@ while true ; do
 # ----------------------------------------------- TESTE -----------------------------------------
 		elif [[ $skip = "t" ]]; then
 			echo "-----------------------:------- TESTE -----------------------------------------"
+			echo ""
+		
+		
+		
+			ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+			ip=${ip%/*}	
+			url="https://meowifi.meo.pt/wifim-scl/service/session-status"
+			body="{\"ipAddress\":\"$ip\"}"
 
-			echo -e "6600 - Red\n5400 - Yellow"
-			echo "Time: $totaltime"
-
+			# Send a POST request and parse the session ID from the JSON response
+			sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
+			echo $sessionId
+			sessionId=$(echo $sessionId | jq -r '.sessionId')
+		
+			url="https://meowifi.meo.pt/wifim-scl/service/$sessionId/session-logoff"
+			echo ""
+			echo $(curl $curlCmd "$url")
  
+ 
+ 
+			echo ""
 			echo "-----------------------:------- TESTE -----------------------------------------"
 			echo ""
 			skip="f"
@@ -806,8 +825,12 @@ while true ; do
 					starttime=$(date -d "$meoTime Z" +%s)
 					currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 					totaltime=$(($currenttime - $starttime))
+					if [ $totaltime -lt 0 ] ; then 
+						totaltime=$(($totaltime + 86400))
+					fi
 					echo ""
 					echo "    Meo: v2"
+					echo -e "        SessionID      : $(echo $sessionId | jq -r '.sessionId')"
 					echo -e "        Connection time: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"			
 				else
 				echo ""
@@ -816,10 +839,10 @@ while true ; do
 				fi
 			fi
 			echo "    VnStat (today):"
-			echo "        Downstream: ${arrOUT[1]}${arrOUT[2]}"
-			echo "        Upstream  : ${arrOUT[3]}${arrOUT[4]}"
-			echo "        Total     : ${arrOUT[5]}${arrOUT[6]}"
-			echo "        Speed     : ${arrOUT[7]}${arrOUT[8]}"
+			echo "        Downstream     : ${arrOUT[1]}${arrOUT[2]}"
+			echo "        Upstream       : ${arrOUT[3]}${arrOUT[4]}"
+			echo "        Total          : ${arrOUT[5]}${arrOUT[6]}"
+			echo "        Speed          : ${arrOUT[7]}${arrOUT[8]}"
 			echo ""
 			checkUpdate
 			#syncTime

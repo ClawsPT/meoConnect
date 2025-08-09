@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.621'
+version='0.623'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -164,12 +164,12 @@ echo $(python3 -c "$PYCMD" -u $ip -p $passwd)
 
 connectMeoWiFi () {
 		mpg321 -q $OnlineFile > /dev/null 2>&1 &
-		if [ "$connectionVer" == "v2" ] ; then
-			echo "Connecting to          : $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
-			#echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-			#echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
-		fi
+		#if [ "$connectionVer" == "v2" ] ; then
+		#	echo "Connecting to          : $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
+		#	#echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
+		#	#echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+		#	nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+		#fi
 		
 		echo -n "Login to MEO WiFi v1   : "
 		connect=$(connectMeoWiFiv1)
@@ -832,7 +832,7 @@ while true ; do
 					echo ""
 					echo "    Meo: v2"
 					echo -e "        SessionID      : $(echo $sessionId | jq -r '.sessionId')"
-					echo -e "        Connection time: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")  $totaltime"			
+					echo -e "        Connection time: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S") ( $totaltime )"			
 				else
 				echo ""
 				echo "    Meo: v2"

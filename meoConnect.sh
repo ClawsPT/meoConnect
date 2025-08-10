@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.624'
+version='0.634'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -31,165 +31,17 @@ remLine=false
 #  MA 02110-1301, USA.
 #----------------------------------------------------------------------- 
 
-encryptPasswd () {
-
-#Using python to encrypt password
-#Using part of ravemir code - https://github.com/ravemir/meo-wifi-login
-	
-PYCMD=$(cat <<EOF
-
-from __future__ import absolute_import
-from __future__ import print_function
-
-import os
-import sys
-import getopt
-import getpass
-import json
-import hashlib
-import base64
-import urllib
-if sys.version_info >= (3, 0):
-  import urllib.request
-  urllib = urllib.request
-
-### Non-builtin imports
-try:
-  import requests
-except ImportError:
-  pass
-
-try:
-  from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-  from cryptography.hazmat.primitives.padding import PKCS7
-  from cryptography.hazmat.backends import default_backend
-except ImportError:
-  pass
-
-try:
-  import pyaes
-except ImportError:
-  pass
-
-## Check dependency requirements
-missing_msg = []
-fail = False
-
-# Need either cryptography or pyaes
-if "cryptography" not in sys.modules and "pyaes" not in sys.modules:
-  fail = True
-  missing_msg += [ "cryptography or pyaes" ]
-
-if fail == True:
-  print("Error: missing dependencies.")
-  print("Please install the following modules: " + ", ".join(missing_msg))
-  sys.exit(1)
-
-### Encryption functions
-
-def encrypt_pyaes(key, iv, msg):
-  """encrypt using pyaes module"""
-  mode = pyaes.AESModeOfOperationCBC(key, iv=iv)
-  encrypter = pyaes.blockfeeder.Encrypter(mode)
-  return encrypter.feed(msg) + encrypter.feed()
-
-def encrypt_cryptography(key, iv, msg):
-  """encrypt using cryptography module"""
-  padder = PKCS7(128).padder()
-  msg_padded = padder.update(msg.encode("utf8")) + padder.finalize()
-
-  cipher = Cipher(algorithms.AES(key),
-                  modes.CBC(iv),
-                  backend=default_backend())
-  encryptor = cipher.encryptor()
-  return encryptor.update(msg_padded) + encryptor.finalize()
-
-def encrypt(key, iv, msg):
-  """Encrypt msg using AES in CBC mode and PKCS#7 padding.
-
-  Will use either the cryptography or pyaes module, whichever is
-  available.
-
-  """
-  if "cryptography" in sys.modules:
-    return encrypt_cryptography(key, iv, msg)
-  elif "pyaes" in sys.modules:
-    return encrypt_pyaes(key, iv, msg)
-
-def encrypt_password(ip, password):
-  """Encrypt the password like the captive portal's Javascript does"""
-  # Salt for PBKDF2
-  salt = bytearray.fromhex("77232469666931323429396D656F3938574946")
-  # Initialization vector for CBC
-  iv = bytes(bytearray.fromhex("72c4721ae01ae0e8e84bd64ad66060c4"))
-  
-  # Generate key from IP address
-  key = hashlib.pbkdf2_hmac("sha1", ip.encode("utf8"), salt, 100, dklen=32)
-  
-  # Encrypt password
-  ciphertext = encrypt(key, iv, password)
-  
-  # Encode to Base64 (explicitly convert to string for Python 2/3 compat)
-  ciphertext_b64 = base64.b64encode(ciphertext).decode("ascii")
-  
-  return urllib.quote(ciphertext_b64, safe='')
-
-def main():
-  # Retrieve environment variables
-
-  ip=os.getenv('MEO_WIFI_USER', '')
-  passwd=os.getenv('MEO_WIFI_PASSWORD', '')
-
-  # Parse the arguments
-  opts, args = getopt.getopt(sys.argv[1:], "hxu:p:")
-  for (opt, arg) in opts:
-    if opt == '-p':
-      passwd = arg
-    elif opt == '-u':
-      ip = arg
-  
-  print(encrypt_password(ip, passwd))
-
-if __name__ == '__main__':
-  main()
-EOF
-)
-
-ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
-ip=${ip%/*}	
-
-echo $(python3 -c "$PYCMD" -u $ip -p $passwd)	
-	
-}
 
 connectMeoWiFi () {
 		mpg321 -q $OnlineFile > /dev/null 2>&1 &
-		if [ "$connectionVer" == "v2" ] ; then
-			echo "Connecting to          : $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
-			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
-		fi
-		
-		echo -n "Login to MEO WiFi v1   : "
-		connect=$(connectMeoWiFiv1)
-		if [ "$connect" == 'null' ] || [ "$connect" == '"Já se encontra logado"' ] ; then
-			echo -e "\033[1;92mConnected.\033[0m"
-			remLine=false				
-		elif [ "$connect" == '"OUT OF REACH"' ]  || [ "$connect" == "Access Denied!" ] ; then
-			echo -e "\033[1;91mFail.\033[0m"
-			echo -n "Trying v2 login        : "
-			connectMeoWiFiv2
-			connectionVer='v2'
-			remLine=false
-			
-			
-		elif [ "$connect" == '"De momento não é possível concretizar o seu pedido. Por favor, tente mais tarde."' ] || [ "$connect" == "unavailable" ] ; then
-			echo -e "\033[1;91mUnavailable\033[0m"
-			sleep 5
-			#echo -e "-----------\n$json ----------\n"
-			forceSynctime=1
-			remLine=false
-			connectMeoWiFi
-		else
+
+		echo "Connecting to          : $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
+		nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+
+		echo -n "Login to MEO WiFi      : "
+		connect=$(connectMeoWiFi)
+		if [ "$connect" == 'null' ] || [ "$connect" == '"NO Session Id Found..."' ] ; then
+
 			echo -e "\033[1;91m$connect\033[0m"
 			sleep 2
 		# Get BSSID List.
@@ -231,34 +83,10 @@ connectMeoWiFi () {
 		fi
 }
 
-connectMeoWiFiv1 () {
 
-	ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
-	ip=${ip%/*}
-	encPwd=$(encryptPasswd)
-	connRetryTemp=$(expr $connRetry + 1 )
-	json=""	
-	while [ "$json" = "" -a "$connRetryTemp" -ge 1 ] ;do
-		json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/Login?username="$user"&password="$encPwd"&navigatorLang=pt")
-		connRetryTemp=$(expr $connRetryTemp - 1 )
-	done
+connectMeoWiFi () {
 
-	if [[ $(echo $json | grep "unavailable" ) ]] ; then
-		echo '"Unavailable"'
-	elif [ "$json" == "Access Denied!" ] ; then
-		echo "Access Denied!"
-	else
-		error=$(echo $json | jq '.error')
-		if [[ "$error" ]]; then
-			echo "$error"
-		else
-			echo "Connection timeout. $json"
-		fi
-	fi
-}
-
-connectMeoWiFiv2 () {
-
+	sessionId="null"
 	ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 	ip=${ip%/*}	
 	url="https://meowifi.meo.pt/wifim-scl/service/session-status"
@@ -413,75 +241,34 @@ syncTime () {
 	meoTime=""
 	json=""	
 	remLine=false
-	while [[ ! "$meoTime" ]] ;do	 
-		json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
-		
-		if [[ $(echo $json | grep "unavailable" ) ]] ; then
-			echo -n "--- Debug: $json"
-			json="null"
-		fi
-		if [[ $(echo $json | grep "Access Denied!" ) ]] ; then
-			
-			json="null"
-		fi
-			
 
+	ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+	ip=${ip%/*}	
+	url="https://meowifi.meo.pt/wifim-scl/service/session-status"
+	body="{\"ipAddress\":\"$ip\"}"
 
-		json=$(echo $json | jq '.Consumption')
-		meoTime=$(echo $json | jq -r '.Time')
-	done
+	# Send a POST request and parse the session ID from the JSON response
+	sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
+	sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
+	
+	meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
 	if [ "$meoTime" != "null" ]; then
-		meoTime="$meoTime:00"
-		echo -e "\033[1;92mv1\033[0m: $meoTime"
-		meoTime=$(date -d "1970-01-01 $meoTime Z" +%s)
+		meoTime="${meoTime:11:8}"
+		starttime=$(date -d "$meoTime Z" +%s)
 		currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
-		starttime=$(($currenttime - $meoTime))
-		connectionVer='v1'
-		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"	
+		totaltime=$(($currenttime - $starttime))
+		echo -e "\033[0m: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
+		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"		
 		echo -n -e "Running OLCmd          : \033[0;96m"
 		echo $($OLCmd $connectionVer $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p'))
 		echo -e "\033[0m                       : \033[1;92mDone.\033[0m"
 		echo "-----------------------:-------------------------------------------------------"
 	else
-		echo -e "\033[1;91mv1: Fail.\033[0m"
-		echo -n "                       : "
-		ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
-		ip=${ip%/*}	
-		url="https://meowifi.meo.pt/wifim-scl/service/session-status"
-		body="{\"ipAddress\":\"$ip\"}"
-
-		# Send a POST request and parse the session ID from the JSON response
-		sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
-		sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
-		
-		meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
-		if [ "$meoTime" != "null" ]; then
-			meoTime="${meoTime:11:8}"
-			starttime=$(date -d "$meoTime Z" +%s)
-			currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
-			totaltime=$(($currenttime - $starttime))
-			echo -e "\033[1;92mv2\033[0m: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
-			connectionVer='v2'
-			XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"		
-			echo -n -e "Running OLCmd          : \033[0;96m"
-			echo $($OLCmd $connectionVer $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p'))
-			echo -e "\033[0m                       : \033[1;92mDone.\033[0m"
-			echo "-----------------------:-------------------------------------------------------"
-		else
-			starttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
-			echo -e "\033[1;91mv2: Fail.\033[0m"
-			echo "-----------------------:-------------------------------------------------------"
-		fi
-		
-		
-		
-		#echo "Debug:"
-		#echo $sessionId
-		#echo "-----------------------:-------------------------------------------------------"
-		
-		
-		
+		starttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
+		echo -e "\033[1;91m: Fail.\033[0m"
+		echo "-----------------------:-------------------------------------------------------"
 	fi
+	
 	}
 
 checkUpdate () {
@@ -701,7 +488,7 @@ while true ; do
 		mpg321 $OfflineFile > /dev/null 2>&1
 		echo "-----------------------:-------------------------------------------------------"
 		forceSynctime=1
-		#Login into MEO-WiFi v1/v2
+		#Login into MEO-WiFi
 		connectMeoWiFi
 		continue
 	fi
@@ -788,55 +575,43 @@ while true ; do
 			echo ""
 			skip="f"
 # ----------------------------------------------- TESTE -----------------------------------------
+		
+		
 		elif [[ $skip = "u" ]]; then
 			checkUpdate
 		elif [[ $skip = "s" ]]; then
 			echo "-----------------------:-------------------------------------------------------"
-			if [ $connectionVer == "v1" ]; then
-				json=$(curl $curlCmd "https://servicoswifi.apps.meo.pt/HotspotConnection.svc/GetState?mobile=false")
-				IN=$(vnstat $wifiif -d | (tail -n3))
-				INR=${IN//estimated}
-				arrOUT=(${INR//|/ })
-				echo "Corrent connection: $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
-				json=$(echo $json | jq -r '.Consumption')
-				echo ""
-				echo "Traffic:"
-				echo "    Meo: v1"
+		
+			ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+			ip=${ip%/*}	
+			url="https://meowifi.meo.pt/wifim-scl/service/session-status"
+			body="{\"ipAddress\":\"$ip\"}"
 
-				echo "        DownstreamMB   : $(echo $json | jq -r '.DownstreamMB')"
-				echo "        UpstreamMB     : $(echo $json | jq -r '.UpstreamMB')"
-				echo "        Connection time: $(echo $json | jq -r '.Time'):00"
-			else
-				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
-				ip=${ip%/*}	
-				url="https://meowifi.meo.pt/wifim-scl/service/session-status"
-				body="{\"ipAddress\":\"$ip\"}"
-
-				# Send a POST request and parse the session ID from the JSON response
-				sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
-				
-				#echo $sessionId
-				
-				sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
-				meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
-				if [ "$meoTime" != "null" ]; then
-					meoTime="${meoTime:11:8}"
-					starttime=$(date -d "$meoTime Z" +%s)
-					currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
-					totaltime=$(($currenttime - $starttime))
-					if [ $totaltime -lt 0 ] ; then 
-						totaltime=$(($totaltime + 86400))
-					fi
-					echo ""
-					echo "    Meo: v2"
-					echo -e "        SessionID      : $(echo $sessionId | jq -r '.sessionId')"
-					echo -e "        Connection time: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S") ( $totaltime )"			
-				else
-				echo ""
-				echo "    Meo: v2"
-					echo -e "        Connection time: Fail"
+			# Send a POST request and parse the session ID from the JSON response
+			sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
+			
+			#echo $sessionId
+			
+			sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
+			meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
+			if [ "$meoTime" != "null" ]; then
+				meoTime="${meoTime:11:8}"
+				starttime=$(date -d "$meoTime Z" +%s)
+				currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
+				totaltime=$(($currenttime - $starttime))
+				if [ $totaltime -lt 0 ] ; then 
+					totaltime=$(($totaltime + 86400))
 				fi
+				echo ""
+				echo "    Meo:"
+				echo -e "        SessionID      : $(echo $sessionId | jq -r '.sessionId')"
+				echo -e "        Connection time: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S") ( $totaltime )"			
+			else
+				echo ""
+				echo "    Meo:"
+				echo -e "        Connection time: Fail"
 			fi
+			
 			echo "    VnStat (today):"
 			echo "        Downstream     : ${arrOUT[1]}${arrOUT[2]}"
 			echo "        Upstream       : ${arrOUT[3]}${arrOUT[4]}"

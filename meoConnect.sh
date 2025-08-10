@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.642'
+version='0.643'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -43,8 +43,6 @@ connectMeoWiFi () {
 		
 		if [ "$connect" == "NO Session Id Found..." ] ; then
 
-			echo -e "\033[1;91m$Reconnect\033[0m"
-			sleep 2
 		# Get BSSID List.
 			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 			echo -n "Scanning for MEO WiFi networks: " 
@@ -515,7 +513,8 @@ while true ; do
 		elif [[ $skip = "h" ]]; then
 
 			# Get BSSID List.
-				echo -n "Scanning WiFi networks: " 				
+				echo "-----------------------:-------------------------------------------------------"
+				echo -n "Scanning MEO-WiFi networks: " 				
 				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 				echo $rPasswd | sudo -S nmcli --fields SSID,BSSID,CHAN,BARS,SIGNAL device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" | sort > $HOME/.config/meoConnect/${0##*/}.lst
 				#sed -i 's/MEO-WiFi             //g' $HOME/.config/meoConnect/${0##*/}.lst
@@ -525,14 +524,14 @@ while true ; do
 			# Connecting to BSSID list.
 				echo "     # |                 BSSID                     |Chan| Signal   "
 				cat -b $HOME/.config/meoConnect/${0##*/}.lst
-				read -r -t 25 -p "connect to: " lineNumber
+				echo ""
+				read -r -t 25 -p "Connect to: " lineNumber
 				if  [[ $lineNumber != "" ]]; then 
 					bssid=$(sed -n "$lineNumber"p $HOME/.config/meoConnect/${0##*/}.lst)
 					bssid=$(echo $bssid | sed -n 's/.*MEO-WiFi \([0-9\:A-F]\{17\}\).*/\1/p')
 					bssid=$(echo $bssid | cut -c1-17)
-					echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
+					echo -n "Set new BSSID          : "					
 					echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-					echo -n "Connecting to $bssid: "
 					echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$bssid"
 					echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 					nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1

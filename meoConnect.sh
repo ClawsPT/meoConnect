@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.636'
+version='0.637'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -292,7 +292,7 @@ checkUpdate () {
 	else
 		echo -e "\033[1;91mFail to check.\033[0m"
 	fi
-	remLine=false
+	echo ""
 }
 
 createDNSfile () {

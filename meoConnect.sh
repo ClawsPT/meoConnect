@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.635'
+version='0.636'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -235,7 +235,7 @@ echo $rPasswd | sudo -S cp -f $dnsFile /etc/resolv.conf  > /dev/null 2>&1
 syncTime () {
 	
 	checkUpdate
-	echo -n "Getting Connection Time: "
+	echo -n "Getting Connection Time:"
 	meoTime=""
 	json=""	
 	remLine=false
@@ -255,7 +255,7 @@ syncTime () {
 		starttime=$(date -d "$meoTime Z" +%s)
 		currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 		totaltime=$(($currenttime - $starttime))
-		echo -e "\033[0m: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
+		echo -e "\033[0m $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
 		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"		
 		echo -n -e "Running OLCmd          : \033[0;96m"
 		echo $($OLCmd $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p'))
@@ -263,7 +263,7 @@ syncTime () {
 		echo "-----------------------:-------------------------------------------------------"
 	else
 		starttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
-		echo -e "\033[1;91m: Fail.\033[0m"
+		echo -e "\033[1;91m Fail.\033[0m"
 		echo "-----------------------:-------------------------------------------------------"
 	fi
 	

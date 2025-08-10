@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.638'
+version='0.642'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -38,10 +38,12 @@ connectMeoWiFi () {
 		nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 
 		echo -n "Login to MEO WiFi      : "
-		connect=$(connectMeoWiFi)
-		if [ "$connect" == 'null' ] || [ "$connect" == '"NO Session Id Found..."' ] ; then
+		connect=$(connectMeoWiFiv2)
+		echo "$connect"
+		
+		if [ "$connect" == "NO Session Id Found..." ] ; then
 
-			echo -e "\033[1;91m$connect\033[0m"
+			echo -e "\033[1;91m$Reconnect\033[0m"
 			sleep 2
 		# Get BSSID List.
 			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
@@ -79,12 +81,12 @@ connectMeoWiFi () {
 			forceSynctime=1
 			remLine=false
 			connectMeoWiFi
+
 		fi
 }
 
-connectMeoWiFi () {
+connectMeoWiFiv2 () {
 
-	sessionId="null"
 	ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 	ip=${ip%/*}	
 	url="https://meowifi.meo.pt/wifim-scl/service/session-status"
@@ -93,17 +95,21 @@ connectMeoWiFi () {
 	# Send a POST request and parse the session ID from the JSON response
 	sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
 	sessionId=$(echo $sessionId | jq -r '.sessionId')
-		
-	if [ "$sessionId" != "null" ] ; then
+	
+	
+	
+	if [ "$sessionId" != "null" -a "$sessionId" != "" ]; then
 	# Construct the URL for session login
 		url="https://meowifi.meo.pt/wifim-scl/service/${sessionId}/session-login"
 	# Construct the login request body
 		login_body="{\"userName\":\"$user\",\"password\":\"$passwd\",\"ipAddress\":\"$ip\",\"sessionId\":\"$sessionId\",\"loginType\":\"login\"}"
 	# Send a POST request for login
 		response=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
-		echo -e "\033[1;92mConnected.\033[0m"
+		
+		echo -e "\033[1;92mConnected."
+
 	else
-		echo -e "\033[1;91mNO Session Id Found...\033[0m"
+		echo -e "NO Session Id Found..."
 	fi
 }
 
@@ -431,7 +437,6 @@ while true ; do
 			echo "-----------------------:-------------------------------------------------------"
 			mpg321 $OfflineFile > /dev/null 2>&1
 			connectMeoWiFi
-			sleep 5
 			forceSynctime=1
 			remLine=false
 			netStatus=""
@@ -579,7 +584,9 @@ while true ; do
 		elif [[ $skip = "u" ]]; then
 			echo -ne '\e[1A\e[K'
 			checkUpdate
+			echo "-----------------------:-------------------------------------------------------"
 			echo ""
+			skip="f"
 		elif [[ $skip = "s" ]]; then
 			echo "-----------------------:-------------------------------------------------------"
 		

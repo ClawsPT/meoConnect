@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.634'
+version='0.635'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -30,7 +30,6 @@ remLine=false
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #----------------------------------------------------------------------- 
-
 
 connectMeoWiFi () {
 		mpg321 -q $OnlineFile > /dev/null 2>&1 &
@@ -82,7 +81,6 @@ connectMeoWiFi () {
 			connectMeoWiFi
 		fi
 }
-
 
 connectMeoWiFi () {
 
@@ -260,7 +258,7 @@ syncTime () {
 		echo -e "\033[0m: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
 		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"		
 		echo -n -e "Running OLCmd          : \033[0;96m"
-		echo $($OLCmd $connectionVer $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p'))
+		echo $($OLCmd $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p'))
 		echo -e "\033[0m                       : \033[1;92mDone.\033[0m"
 		echo "-----------------------:-------------------------------------------------------"
 	else
@@ -294,6 +292,7 @@ checkUpdate () {
 	else
 		echo -e "\033[1;91mFail to check.\033[0m"
 	fi
+	remLine=false
 }
 
 createDNSfile () {
@@ -476,7 +475,7 @@ while true ; do
 			CTime="\033[1;92m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
 		fi
 		
-		echo -n -e "  $connectionVer | T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime))) | $CTime : UpDown: ${arrOUT[5]}${arrOUT[6]}"
+		echo -n -e "       T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime))) | $CTime : UpDown: ${arrOUT[5]}${arrOUT[6]}"
 		echo -n " | CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')" | "
 		echo $netStatus	
 	else

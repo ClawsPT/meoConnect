@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.643'
+version='0.644'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -530,7 +530,7 @@ while true ; do
 					bssid=$(sed -n "$lineNumber"p $HOME/.config/meoConnect/${0##*/}.lst)
 					bssid=$(echo $bssid | sed -n 's/.*MEO-WiFi \([0-9\:A-F]\{17\}\).*/\1/p')
 					bssid=$(echo $bssid | cut -c1-17)
-					echo -n "Set new BSSID          : "					
+					echo -n "Setting new BSSID      : "					
 					echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
 					echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$bssid"
 					echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1

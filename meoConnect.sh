@@ -577,6 +577,7 @@ while true ; do
 		
 		
 		elif [[ $skip = "u" ]]; then
+			echo -ne '\e[1A\e[K'
 			checkUpdate
 			echo ""
 		elif [[ $skip = "s" ]]; then

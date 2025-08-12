@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.644'
+version='0.645'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -423,6 +423,14 @@ startUp
 while true ; do
 	currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 	totaltime=$(($currenttime - $starttime))
+	
+	TMoveTzero=$totaltime
+	
+	while [ "$TMoveTzero" -ge 60 ] ; do
+		
+		TMoveTzero=$(expr $TMoveTzero - 60)
+			
+	done
 #-------------------------------- Check Connection ----------------------------------
 	netStatus=""
 	connRetryTemp=$(expr $connRetry + 1 )
@@ -495,9 +503,11 @@ while true ; do
 		continue
 	fi
 
-# ----------------------------------- Pause script ----------------------------------
+# ----------------------------------- Loop script ----------------------------------
+	
 
-	skipTime=$(($recheckTime - ($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime + 1)))
+	skipTime=$(($recheckTime - $TMoveTzero  - ($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime + 1)))
+
 	skip=""
 	
 	while [ "$skip" != "f" -a "$skipTime" -ge 0 ] ;do

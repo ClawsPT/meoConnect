@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.646'
+version='0.647'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -151,11 +151,7 @@ editSettings () {
 	fi
 	
 # Time in seconds between network checks
-	echo -n "Time in seconds between network checks ($recheckTime):"
-	read -r sTemp
-	if [ "$sTemp" ] ; then
-		recheckTime=$sTemp
-	fi
+		recheckTime=60
 	
 # Number of retries
 	echo -n "Number of retries ($connRetry):"
@@ -466,11 +462,11 @@ while true ; do
 		if [ "$remLine" == "true" ] ; then
 			echo -ne '\e[1A\e[K'
 		fi
-		
+
 		if [ $totaltime -lt 0 ] ; then 
 			totaltime=$(($totaltime + 86400))
 		fi	
-			
+	
 		if [ $totaltime -gt 6600 ] ; then
 			CTime="\033[1;91m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
 		elif [ $totaltime -gt 5400 ] ; then
@@ -498,6 +494,10 @@ while true ; do
 
 # ----------------------------------- Loop script ----------------------------------
 	TMoveTzero=$(($EPOCHSECONDS - $starttime))
+	
+	if [ $TMoveTzero -lt 0 ] ; then 
+		TMoveTzero=$(($TMoveTzero + 86400))
+	fi	
 	
 	while [ "$TMoveTzero" -ge 59 ] ; do
 		

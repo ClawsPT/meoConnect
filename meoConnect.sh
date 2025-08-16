@@ -413,6 +413,7 @@ echo "--------------------------------------------------------------------------
 echo -e "|                   MEO Wifi AutoConnect v$version                   By: Claws\033[1;91mP\033[1;92mT\033[0m |"
 echo "-------------------------------------------------------------------------------"
 startUp
+looptime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 
 # -------------------------------- Start Loop ---------------------------------------
 
@@ -475,7 +476,7 @@ while true ; do
 			CTime="\033[1;92m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
 		fi
 		
-		echo -n -e " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $currenttime))) | $CTime : UpDown: ${arrOUT[5]}${arrOUT[6]}"
+		echo -n -e " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime ))) | $CTime : UpDown: ${arrOUT[5]}${arrOUT[6]}"
 		echo -n " | CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')" | "
 		echo $netStatus	
 	else
@@ -648,5 +649,6 @@ while true ; do
 			exit
 		fi	
 	done
+	looptime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 	remLine=true
 done

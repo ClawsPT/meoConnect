@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.648'
+version='0.649'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -494,6 +494,7 @@ while true ; do
 	fi
 
 # ----------------------------------- Loop script ----------------------------------
+
 	TMoveTzero=$(($EPOCHSECONDS - $starttime))
 	
 	if [ $TMoveTzero -lt 0 ] ; then 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.647'
+version='0.648'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -166,8 +166,8 @@ editSettings () {
 	echo ""
 	echo "Note: To Change Command to run on successful login edit"
 	echo "    : $OLCmd"
-	echo "    : two values are sent to the scrip"
-	echo "    : 1-Connection Version Version, 2-BSSID"
+	echo "    : one value is sent to the scrip"
+	echo "    : 1-BSSID "
 	echo ""
 	echo "Note: To Change DNS config edit $dnsFile"
 	echo ""
@@ -219,7 +219,7 @@ recheckTime='$recheckTime'
 editor='$editor'
 
 # curl command
-curlCmd='-s --interface $wifiif --connect-timeout 20 --max-time 10 -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0"'
+curlCmd='-s --interface $wifiif --connect-timeout 10 --max-time 10 -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0"'
 
 # Number of retries
 connRetry='$connRetry'

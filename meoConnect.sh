@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.650'
+version='0.651'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -72,7 +72,7 @@ connectMeoWiFi () {
 				fi
 			done <$HOME/.config/meoConnect/${0##*/}.lst	
 			else
-				echo "Debug . no aps found sleeping 30s."
+				echo " no aps found sleeping 30s."
 					sleep 30
 			
 			fi
@@ -104,7 +104,7 @@ connectMeoWiFiv2 () {
 	# Send a POST request for login
 		response=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
 		
-		echo -e "\033[1;92mConnected."
+		echo -e "\033[1;92mConnected.\033[0m"
 
 	else
 		echo -e "NO Session Id Found..."
@@ -490,7 +490,7 @@ while true ; do
 		forceSynctime=1
 		#Login into MEO-WiFi
 		connectMeoWiFi
-		echo -n -e "Offline Time           : T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime )))"
+		echo -e "Offline Time           : (printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime )))s"
 		continue
 	fi
 

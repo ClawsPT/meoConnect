@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.652'
+version='0.653'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -412,8 +412,9 @@ clear
 echo "-------------------------------------------------------------------------------"
 echo -e "|                   MEO Wifi AutoConnect v$version                   By: Claws\033[1;91mP\033[1;92mT\033[0m |"
 echo "-------------------------------------------------------------------------------"
-startUp
+
 looptime=$(date --date """$(date "+%H:%M:%S")""" +%s)
+startUp
 
 # -------------------------------- Start Loop ---------------------------------------
 

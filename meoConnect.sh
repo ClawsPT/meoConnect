@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.653'
+version='0.655'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -421,26 +421,33 @@ startUp
 while true ; do
 	currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 	totaltime=$(($currenttime - $starttime))
-	
+	if [ $totaltime -lt 0 ] ; then 
+		totaltime=$(($totaltime + 86400))
+	fi	
 #-------------------------------- Check Connection ----------------------------------
 	netStatus=""
-	connRetryTemp=$(expr $connRetry + 1 )
-	while [ "$netStatus" = "" -a "$connRetryTemp" -ge 1 ] ;do
-		netStatus=$(echo $(curl $curlCmd --head www.google.com | grep "HTTP/"))
-		netStatus=$(printf "$netStatus" | sed 's/\r//g' | sed 's/HTTP\/1.1 //g' | sed 's/HTTP\/1.0 //g')
-		if [[ $(echo $netStatus | grep "Moved") ]] || [[ $(echo $netStatus | grep "Found") ]]; then #Moved -> redirected to login portal
-			echo "-----------------------:-------------------------------------------------------"
-			echo -e " \033[1;91m------ OFFLINE ------\033[0m | At: $(date "+%H:%M:%S") | \033[1;92mRedirected to login portal\033[0m - $netStatus"
-			echo "-----------------------:-------------------------------------------------------"
-			mpg321 $OfflineFile > /dev/null 2>&1
-			connectMeoWiFi
-			forceSynctime=1
-			remLine=false
-			netStatus=""
-			continue
-		fi
-		connRetryTemp=$(expr $connRetryTemp - 1 )
-	done
+
+	# If over 2h force Reconnect else check connection
+	
+	if [ "$totaltime" -lt 7200 ] ; then
+		connRetryTemp=$(expr $connRetry + 1 )
+		while [ "$netStatus" = "" -a "$connRetryTemp" -ge 1 ] ;do
+			netStatus=$(echo $(curl $curlCmd --head www.google.com | grep "HTTP/"))
+			netStatus=$(printf "$netStatus" | sed 's/\r//g' | sed 's/HTTP\/1.1 //g' | sed 's/HTTP\/1.0 //g')
+			if [[ $(echo $netStatus | grep "Moved") ]] || [[ $(echo $netStatus | grep "Found") ]]; then #Moved -> redirected to login portal
+				echo "-----------------------:-------------------------------------------------------"
+				echo -e " \033[1;91m------ OFFLINE ------\033[0m | At: $(date "+%H:%M:%S") | \033[1;92mRedirected to login portal\033[0m - $netStatus"
+				echo "-----------------------:-------------------------------------------------------"
+				mpg321 $OfflineFile > /dev/null 2>&1
+				connectMeoWiFi
+				forceSynctime=1
+				remLine=false
+				netStatus=""
+				continue
+			fi
+			connRetryTemp=$(expr $connRetryTemp - 1 )
+		done
+	fi
 # ---------------------------------- ONLINE -----------------------------------------
 	
 	if [[ "$netStatus" ]]; then

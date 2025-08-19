@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.655'
+version='0.656'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -499,6 +499,8 @@ while true ; do
 		#Login into MEO-WiFi
 		connectMeoWiFi
 		echo -e "Offline Time           : $(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime )))s"
+		starttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
+		
 		continue
 	fi
 
@@ -576,19 +578,8 @@ while true ; do
 		
 		
 		
-			ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
-			ip=${ip%/*}	
-			url="https://meowifi.meo.pt/wifim-scl/service/session-status"
-			body="{\"ipAddress\":\"$ip\"}"
-
-			# Send a POST request and parse the session ID from the JSON response
-			sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
-			echo $sessionId
-			sessionId=$(echo $sessionId | jq -r '.sessionId')
-		
-			url="https://meowifi.meo.pt/wifim-scl/service/$sessionId/session-logoff"
-			echo ""
-			echo $(curl $curlCmd "$url")
+				echo $starttime
+				starttime=$(($starttime - 7200))
  
  
  

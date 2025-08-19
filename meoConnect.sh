@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.656'
+version='0.657'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -286,7 +286,7 @@ checkUpdate () {
 			chmod +x "$SCRIPT_DIR/"${0##*/}
 			echo "Restarting script."
 			mpg321 -q $OfflineFile
-			sleep 5
+			sleep 2
 			exec "$SCRIPT_DIR/"${0##*/}
 		fi
 	else
@@ -498,6 +498,7 @@ while true ; do
 		forceSynctime=1
 		#Login into MEO-WiFi
 		connectMeoWiFi
+		echo -e "Session ID             : $(echo $sessionId | jq -r '.sessionId')"
 		echo -e "Offline Time           : $(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime )))s"
 		starttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 		

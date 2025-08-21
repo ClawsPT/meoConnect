@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.658'
+version='0.659'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -33,13 +33,16 @@ remLine=false
 
 connectMeoWiFi () {
 		mpg321 -q $OnlineFile > /dev/null 2>&1 &
+		if [ $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p') ] ; then
+			echo "Connecting to          : $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
+			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 
-		echo "Connecting to          : $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
-		nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
-
-		echo -n "Login to MEO WiFi      : "
-		connect=$(connectMeoWiFiv2)
-		echo "$connect"
+			echo -n "Login to MEO WiFi      : "
+			connect=$(connectMeoWiFiv2)
+			echo "$connect"
+		else
+			connect="NO Session Id Found..."
+		fi
 		
 		if [ "$connect" == "NO Session Id Found..." ] ; then
 
@@ -51,7 +54,7 @@ connectMeoWiFi () {
 			sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
 			APCount=$(echo -e " $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst)")
 			echo -e " $APCount APs found. \033[1;92mDone.\033[0m"
-			
+			cat -b $HOME/.config/meoConnect/${0##*/}.lst
 			if [ $APCount != 0 ] ; then
 
 			echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
@@ -219,7 +222,7 @@ recheckTime='$recheckTime'
 editor='$editor'
 
 # curl command
-curlCmd='-s --interface $wifiif --connect-timeout 10 --max-time 10 -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0"'
+curlCmd='-s --interface $wifiif --connect-timeout 20 --max-time 20 -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0"'
 
 # Number of retries
 connRetry='$connRetry'
@@ -401,7 +404,7 @@ else
 	echo -e "\033[1;91mDisconnected.\033[0m"
 	starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 fi
-echo " $(date "+%Y-%m-%d - %H:%M:%S") : Starting script"
+echo    "Starting script        : $(date "+%Y-%m-%d - %H:%M:%S")"
 echo -e "-----------------------:-------------------------------------------------------"
 
 }

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.659'
+version='0.660'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -442,7 +442,7 @@ while true ; do
 				echo -e " \033[1;91m------ OFFLINE ------\033[0m | At: $(date "+%H:%M:%S") | \033[1;92mRedirected to login portal\033[0m - $netStatus"
 				echo "-----------------------:-------------------------------------------------------"
 				mpg321 $OfflineFile > /dev/null 2>&1
-				connectMeoWiFi
+				connectMeoWiFi2
 				forceSynctime=1
 				remLine=false
 				netStatus=""
@@ -526,7 +526,7 @@ while true ; do
 	skip=""
 	
 	while [ "$skip" != "f" -a "$skipTime" -ge 0 ] ;do
-		linkQuality=$(iwconfig wlan1 | awk -F= '/Quality/ {print $2}' | awk -F/ '{print $1}')
+		linkQuality=$(iwconfig $wifiif | awk -F= '/Quality/ {print $2}' | awk -F/ '{print $1}')
 	
 		echo -e -n ">>>>   T-$skipTime""s  S:$linkQuality%   \033[4;1mF\033[0morce   c\033[4;1mH\033[0mange AP   \033[4;1mC\033[0monfig    \033[4;1mS\033[0mtatus   \033[4;1mR\033[0meload   \033[4;1mQ\033[0muit <<<"
 		

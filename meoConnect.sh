@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.660'
+version='0.661'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -442,7 +442,7 @@ while true ; do
 				echo -e " \033[1;91m------ OFFLINE ------\033[0m | At: $(date "+%H:%M:%S") | \033[1;92mRedirected to login portal\033[0m - $netStatus"
 				echo "-----------------------:-------------------------------------------------------"
 				mpg321 $OfflineFile > /dev/null 2>&1
-				connectMeoWiFi2
+				connectMeoWiFiv2
 				forceSynctime=1
 				remLine=false
 				netStatus=""

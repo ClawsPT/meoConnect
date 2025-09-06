@@ -442,7 +442,11 @@ while true ; do
 				echo -e " \033[1;91m------ OFFLINE ------\033[0m | At: $(date "+%H:%M:%S") | \033[1;92mRedirected to login portal\033[0m - $netStatus"
 				echo "-----------------------:-------------------------------------------------------"
 				mpg321 $OfflineFile > /dev/null 2>&1
+				echo -e -n "Login to MEO WiFi      : "
 				connectMeoWiFiv2
+				echo -e "Session ID             : $(echo $sessionId | jq -r '.sessionId')"
+				echo -e "Offline Time           : $(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime )))s"
+				starttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 				forceSynctime=1
 				remLine=false
 				netStatus=""

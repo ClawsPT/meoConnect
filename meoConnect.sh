@@ -491,7 +491,7 @@ while true ; do
 			CTime="\033[1;92m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
 		fi
 		
-		echo -n -e " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime ))) | $CTime | Dl/Ul: ${arrOUT[1]}${arrOUT[2]} / ${arrOUT[3]}${arrOUT[4]}"
+		echo -n -e " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime ))) | $CTime | Dn/Up: ${arrOUT[1]}${arrOUT[2]} / ${arrOUT[3]}${arrOUT[4]}"
 		echo -n " | CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')" | "
 		echo $netStatus	
 	else

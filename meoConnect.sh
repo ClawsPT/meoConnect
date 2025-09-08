@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.665'
+version='0.667'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -444,7 +444,7 @@ while true ; do
 				mpg321 $OfflineFile > /dev/null 2>&1
 				echo -e -n "Login to MEO WiFi      : "
 				connectMeoWiFiv2
-				echo -e "Session ID             : $(echo $sessionId | jq -r '.sessionId')"
+				echo -e "Session ID             : $(echo $sessionId)" # | jq -r '.sessionId')"
 				echo -e "Offline Time           : $(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime )))s"
 				starttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 				forceSynctime=1

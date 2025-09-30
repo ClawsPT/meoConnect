@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.670'
+version='0.671'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -457,8 +457,9 @@ while true ; do
 		done
 		
 		else
-			echo "2h limit - reconnect in 5s."
-			sleep 5		
+			echo " ---- |2h reached| reconnecting..."
+
+			sleep 2
 	fi
 # ---------------------------------- ONLINE -----------------------------------------
 	

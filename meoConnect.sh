@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.672'
+version='0.673'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -496,7 +496,7 @@ while true ; do
 			CTime="\033[1;92m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
 		fi
 		
-		echo -n -e " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime ))) | $CTime | Dn/Up: ${arrOUT[1]}${arrOUT[2]} / ${arrOUT[3]}${arrOUT[4]}"
+		echo -n -e " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime ))) | $CTime | D/U : ${arrOUT[1]}${arrOUT[2]} / ${arrOUT[3]}${arrOUT[4]}"
 		echo -n " | CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')" | "
 		echo $netStatus	
 	else

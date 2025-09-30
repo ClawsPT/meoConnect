@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.668'
+version='0.669'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -433,8 +433,7 @@ while true ; do
 	# If over 2h force Reconnect else check connection
 	
 	if [ "$totaltime" -lt 7200 ] ; then
-		echo "2h limit - reconnect in 5s."
-		sleep 5
+
 		connRetryTemp=$(expr $connRetry + 1 )
 		while [ "$netStatus" = "" -a "$connRetryTemp" -ge 1 ] ;do
 			netStatus=$(echo $(curl $curlCmd --head www.google.com | grep "HTTP/"))
@@ -456,6 +455,10 @@ while true ; do
 			fi
 			connRetryTemp=$(expr $connRetryTemp - 1 )
 		done
+		
+		else
+			echo "2h limit - reconnect in 5s."
+			sleep 5		
 	fi
 # ---------------------------------- ONLINE -----------------------------------------
 	

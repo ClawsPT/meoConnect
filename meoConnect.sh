@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.674'
+version='0.675'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -456,8 +456,8 @@ while true ; do
 			connRetryTemp=$(expr $connRetryTemp - 1 )
 		done
 		
-		else
-			echo -e " ---- |2h reached| \033[1;92mreconnecting...\033[0m"
+		else                                          : 
+			echo -e " -----> 2h reached               : \033[1;92mreconnecting...\033[0m"
 			sleep 2
 	fi
 # ---------------------------------- ONLINE -----------------------------------------

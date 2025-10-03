@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.678'
+version='0.679'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -458,7 +458,7 @@ while true ; do
 		
 		else
 			echo -ne '\e[1A\e[K'
-			echo "-----------------------:-------------------------------------------------------"
+			#echo "-----------------------:-------------------------------------------------------"
 			echo -e "\033[1;91m 2 Hour Limit Reached  \033[0m: \033[1;92mreconnecting...\033[0m"
 			sleep 2
 	fi

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.679'
+version='0.680'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -264,7 +264,9 @@ syncTime () {
 		echo $($OLCmd $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p'))
 		echo -e "\033[0m                       : \033[1;92mDone.\033[0m"
 		echo "-----------------------:-------------------------------------------------------"
+		Skip2h=false
 	else
+		Skip2h=true
 		starttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 		echo -e "\033[1;91m Fail.\033[0m"
 		echo "-----------------------:-------------------------------------------------------"
@@ -420,7 +422,7 @@ looptime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 startUp
 
 # -------------------------------- Start Loop ---------------------------------------
-
+ 
 while true ; do
 	currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 	totaltime=$(($currenttime - $starttime))
@@ -432,7 +434,7 @@ while true ; do
 
 	# If over 2h force Reconnect else check connection
 	
-	if [ "$totaltime" -lt 7200 ] ; then
+	if [ "$totaltime" -lt 7200 ] || [ Skip2h ] ; then
 
 		connRetryTemp=$(expr $connRetry + 1 )
 		while [ "$netStatus" = "" -a "$connRetryTemp" -ge 1 ] ;do
@@ -449,6 +451,7 @@ while true ; do
 				echo -e "Offline Time           : $(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime )))s"
 				starttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 				forceSynctime=1
+				Skip2h = false
 				remLine=false
 				netStatus=""
 				continue

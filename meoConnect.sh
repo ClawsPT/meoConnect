@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.685'
+version='0.686'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -435,7 +435,7 @@ while true ; do
 
 	# If over 2h force Reconnect else check connection
 	
-	if [ "$totaltime" -lt 7200 ] || [ Skip2h ] ; then
+	if [[ "$totaltime" -lt 7200 || $Skip2h ]] ; then
 
 		connRetryTemp=$(expr $connRetry + 1 )
 		while [ "$netStatus" = "" -a "$connRetryTemp" -ge 1 ] ;do
@@ -451,8 +451,10 @@ while true ; do
 				echo -e "Session ID             : $(echo $sessionId)" # | jq -r '.sessionId')"
 				echo -e "Offline Time           : $(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime )))s"
 				starttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
-				forceSynctime=1
-				Skip2h = false
+				syncTime
+				totaltime=$(($currenttime - $starttime))
+				forceSynctime=0
+				Skip2h=false
 				remLine=false
 				netStatus=""
 				continue
@@ -460,11 +462,11 @@ while true ; do
 			connRetryTemp=$(expr $connRetryTemp - 1 )
 		done
 		
-		else
-			echo -ne '\e[1A\e[K'
-			#echo "-----------------------:-------------------------------------------------------"
-			echo -e "\033[1;91m 2 Hour Limit Reached  \033[0m: \033[1;92mreconnecting...\033[0m"
-			sleep 2
+	else
+		echo -ne '\e[1A\e[K'
+		#echo "-----------------------:-------------------------------------------------------"
+		echo -e "\033[1;91m 2 Hour Limit Reached  \033[0m: \033[1;92mreconnecting...\033[0m"
+		sleep 2
 	fi
 # ---------------------------------- ONLINE -----------------------------------------
 	
@@ -494,7 +496,7 @@ while true ; do
 			totaltime=$(($totaltime + 86400))
 		fi	
 
-		if [ $Skip2h ] ; then
+		if $Skip2h ; then
 			CTime="\033[1;96mSkip ON\033[0m"
 		elif [ $totaltime -gt 6900 ] ; then
 			CTime="\033[1;91m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
@@ -521,6 +523,9 @@ while true ; do
 		echo -e "Session ID             : $(echo $sessionId | jq -r '.sessionId')"
 		echo -e "Offline Time           : $(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime )))s"
 		starttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
+		syncTime
+		totaltime=$(($currenttime - $starttime))
+		forceSynctime=0
 		
 		continue
 	fi
@@ -598,7 +603,7 @@ while true ; do
 			echo ""
 		
 		
-		
+				Skip2h=true
 				echo $starttime
 				starttime=$(($starttime - 7200))
  

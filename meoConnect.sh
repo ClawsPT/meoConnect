@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.686'
+version='0.687'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -435,7 +435,7 @@ while true ; do
 
 	# If over 2h force Reconnect else check connection
 	
-	if [[ "$totaltime" -lt 7200 || $Skip2h ]] ; then
+	if [[ "$totaltime" -lt 7200 ]] || [[ $Skip2h == true ]] ; then
 
 		connRetryTemp=$(expr $connRetry + 1 )
 		while [ "$netStatus" = "" -a "$connRetryTemp" -ge 1 ] ;do
@@ -603,7 +603,6 @@ while true ; do
 			echo ""
 		
 		
-				Skip2h=true
 				echo $starttime
 				starttime=$(($starttime - 7200))
  

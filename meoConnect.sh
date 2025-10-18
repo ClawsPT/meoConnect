@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.689'
+version='0.670'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -263,6 +263,7 @@ syncTime () {
 	# Send a POST request and parse the session ID from the JSON response
 	sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
 	sessionInfo=$(echo $sessionId | jq '.sessionInfo' )
+	sessionId=$(echo $sessionId | jq -r '.sessionId')
 	
 	meoTime=$(echo $sessionInfo | jq -r '.sessionInitialDate')
 	if [ "$meoTime" != "null" ]; then

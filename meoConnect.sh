@@ -414,6 +414,7 @@ fi
 if [[ "$netStatus" ]]; then
 	echo -e "\033[1;92mConnected to\033[0m $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 	syncTime
+	echo -n "Session ID             : $sessionId" 
 else
 	echo -e "\033[1;91mDisconnected.\033[0m"
 	starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)

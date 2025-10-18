@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.672'
+version='0.673'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -40,17 +40,6 @@ connectMeoWiFi () {
 
 			echo -n "Login to MEO WiFi      : "
 			connect=$(connectMeoWiFiv2)
-			
-			ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
-			ip=${ip%/*}	
-			url="https://meowifi.meo.pt/wifim-scl/service/session-status"
-			body="{\"ipAddress\":\"$ip\"}"
-
-			# Send a POST request and parse the session ID from the JSON response
-			sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
-			sessionId=$(echo $sessionId | jq -r '.sessionId')
-
-			
 			echo "$connect"
 		else
 			connect="NO Session Id Found..."

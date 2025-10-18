@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.670'
+version='0.671'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -272,7 +272,8 @@ syncTime () {
 		currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 		totaltime=$(($currenttime - $starttime))
 		echo -e "\033[0m $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
-		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"		
+		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
+		echo -e "Session ID             : $sessionId"		
 		echo -n -e "Running OLCmd          : \033[0;96m"
 		echo $($OLCmd $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p'))
 		echo -e "\033[0m                       : \033[1;92mDone.\033[0m"
@@ -414,8 +415,7 @@ fi
 
 if [[ "$netStatus" ]]; then
 	echo -e "\033[1;92mConnected to\033[0m $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
-	syncTime
-	echo -n "Session ID             : $sessionId" 
+	syncTime 
 else
 	echo -e "\033[1;91mDisconnected.\033[0m"
 	starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)

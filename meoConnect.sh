@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.671'
+version='0.672'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -271,9 +271,9 @@ syncTime () {
 		starttime=$(date -d "$meoTime Z" +%s)
 		currenttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 		totaltime=$(($currenttime - $starttime))
-		echo -e "\033[0m $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
+		echo -e "\033[1;92m $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
 		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
-		echo -e "Session ID             : $sessionId"		
+		echo -e "Session ID             : \033[1;92m$sessionId\033[0m"		
 		echo -n -e "Running OLCmd          : \033[0;96m"
 		echo $($OLCmd $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p'))
 		echo -e "\033[0m                       : \033[1;92mDone.\033[0m"

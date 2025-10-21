@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.675'
+version='0.676'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -409,6 +409,7 @@ else
 	echo -e "\033[1;91mDisconnected.\033[0m"
 	starttime=$(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s)
 	connectMeoWiFi
+	syncTime
 fi
 echo    "Starting script        : $(date "+%Y-%m-%d - %H:%M:%S")"
 echo -e "-----------------------:-------------------------------------------------------"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.680'
+version='0.681'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -46,8 +46,6 @@ connectMeoWiFi () {
 		fi
 		
 		if [ "$connect" == "NO Session Id Found..." ] ; then
-			echo -e "Session Info           : $sessionInfo"
-			read -rsn1 -t 60 foo
 			
 		# Get BSSID List.
 			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
@@ -112,6 +110,8 @@ connectMeoWiFiv2 () {
 
 	else
 		echo -e "NO Session Id Found..."
+		echo -e "\nSession Info           : $sessionInfo"
+		echo ""
 
 	fi
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.676'
+version='0.677'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -267,7 +267,11 @@ syncTime () {
 		echo $($OLCmd $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p'))
 		echo -e "\033[0m                       : \033[1;92mDone.\033[0m"
 		echo "-----------------------:-------------------------------------------------------"
-		Skip2h=false
+		if [[ "$totaltime" -lt 7200 ]] ; then
+			Skip2h=false
+		else
+			Skip2h=true
+		fi
 	else
 		Skip2h=true
 		starttime=$(date --date """$(date "+%H:%M:%S")""" +%s)

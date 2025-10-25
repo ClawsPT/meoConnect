@@ -46,7 +46,9 @@ connectMeoWiFi () {
 		fi
 		
 		if [ "$connect" == "NO Session Id Found..." ] ; then
-
+			echo -e "Session Info           : $sessionInfo"
+			read -rsn1 -t 60 foo
+			
 		# Get BSSID List.
 			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 			echo -n "Scanning for MEO WiFi networks: " 
@@ -95,10 +97,8 @@ connectMeoWiFiv2 () {
 	body="{\"ipAddress\":\"$ip\"}"
 
 	# Send a POST request and parse the session ID from the JSON response
-	sessionId=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
-	sessionId=$(echo $sessionId | jq -r '.sessionId')
-	
-	
+	sessionInfo=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
+	sessionId=$(echo $sessionInfo | jq -r '.sessionId')
 	
 	if [ "$sessionId" != "null" -a "$sessionId" != "" ]; then
 	# Construct the URL for session login
@@ -112,7 +112,9 @@ connectMeoWiFiv2 () {
 
 	else
 		echo -e "NO Session Id Found..."
+
 	fi
+
 }
 
 editSettings () {

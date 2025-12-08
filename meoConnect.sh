@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.681'
+version='0.682'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -111,7 +111,7 @@ connectMeoWiFiv2 () {
 	else
 		echo -e "NO Session Id Found..."
 		echo -e "\nSession Info           : $sessionInfo"
-		echo ""
+		echo "."
 
 	fi
 
@@ -430,7 +430,7 @@ echo -e "-----------------------:-----------------------------------------------
 
 clear
 echo "-------------------------------------------------------------------------------"
-echo -e "|                   MEO Wifi AutoConnect v$version                   By: Claws\033[1;91mP\033[1;92mT\033[0m |"
+echo -e "|                   MEO Wifi AutoConnect v$version                   By: Claws\033[1;92mP\033[1;91mT\033[0m |"
 echo "-------------------------------------------------------------------------------"
 
 looptime=$(date --date """$(date "+%H:%M:%S")""" +%s)

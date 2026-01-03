@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.702'
+version='0.703'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -641,29 +641,7 @@ while true ; do
 			echo ""
 		
 		
-				scanNetworks
-							
-				echo -e "\033[1;92mDone.\033[0m $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) APs found."		
-				echo ""
-				echo "     # |         BSSID            |Chan| Signal   "
-				cat -b $HOME/.config/meoConnect/${0##*/}.lst
-				echo ""
-				read -r -t 25 -p "Connect to: " lineNumber
-				
-				
-				if  [[ $lineNumber != "" ]]; then 
-					
-					bssid=$(sed -n "$lineNumber"p $HOME/.config/meoConnect/${0##*/}.lst)
-					
-					bssid=$(echo $bssid | tail )
-					
-					echo "All   :$bssid"
-					
-					echo "BSSID :$(echo $bssid | cut -d ' ' -f 2)"
-					echo "CHAN  :$(echo $bssid | cut -d ' ' -f 3)"
-					echo "PWR   :$(echo $bssid | cut -d ' ' -f 4)"
-					
-				fi
+
  
  
  

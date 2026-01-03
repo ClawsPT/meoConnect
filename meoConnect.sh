@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.710'
+version='0.711'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -64,7 +64,7 @@ connectMeoWiFi () {
 			sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
 			sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
 			APCount=$(echo -e " $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst)")
-			echo -e " $APCount APs found. \033[1;92mDone.\033[0m"
+			echo ""
 			cat -b $HOME/.config/meoConnect/${0##*/}.lst
 			
 			if [ $APCount != 0 ] ; then
@@ -372,7 +372,7 @@ scanNetworks () {
 	
 	mv $HOME/.config/meoConnect/${0##*/}.temp.lst $HOME/.config/meoConnect/${0##*/}.lst
 	
-	echo -e "\033[1;92mDone.\033[0m"						
+	echo -e "$(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) Found: \033[1;92mDone.\033[0m"						
 }
 
 startUp () {
@@ -618,7 +618,8 @@ while true ; do
 			scanNetworks
 				
 			# Connecting to BSSID list.
-				echo "     # |         BSSID            |Chan| Signal   "
+				echo ""
+				echo "     # |         BSSID            |Cha| Signal   "
 				cat -b $HOME/.config/meoConnect/${0##*/}.lst
 				echo ""
 				read -r -t 25 -p "Connect to: " lineNumber

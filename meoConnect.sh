@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.711'
+version='0.712'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -347,7 +347,7 @@ scanNetworks () {
 	echo "-----------------------:-------------------------------------------------------"
 	echo -n "Scanning MEO-WiFi networks: " 				
 	echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-	echo $rPasswd | sudo -S nmcli device wifi rescan > /dev/null 2>&1
+	echo $rPasswd | sudo -S nmcli device wifi rescan ifname $wifiif > /dev/null 2>&1
 	echo $rPasswd | sudo -S nmcli --fields SSID,BSSID,CHAN,SIGNAL device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
 	Lines=$(wc -l < $HOME/.config/meoConnect/${0##*/}.lst)
 

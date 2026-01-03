@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.703'
+version='0.705'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -233,11 +233,6 @@ connRetry='$connRetry'
 EOF
 }
 
-setDNS () {
-	
-echo $rPasswd | sudo -S cp -f $dnsFile /etc/resolv.conf  > /dev/null 2>&1
-}
-
 syncTime () {
 	
 	checkUpdate
@@ -329,6 +324,44 @@ options attempts:2
 options edns0 trust-ad
 EOF
 
+}
+
+setDNS () {
+	
+echo $rPasswd | sudo -S cp -f $dnsFile /etc/resolv.conf  > /dev/null 2>&1
+}
+
+scanNetworks () {
+
+	echo "-----------------------:-------------------------------------------------------"
+	echo -n "Scanning MEO-WiFi networks: " 				
+	echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+	echo $rPasswd | sudo -S nmcli device wifi rescan > /dev/null 2>&1
+	echo $rPasswd | sudo -S nmcli --fields SSID,BSSID,CHAN,SIGNAL device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
+	Lines=$(wc -l < $HOME/.config/meoConnect/${0##*/}.lst)
+
+	for (( i=1; i <= $Lines; ++i )); do # 5ghz
+						
+		bssid=$(sed -n "$i"p $HOME/.config/meoConnect/${0##*/}.lst)
+		bssid=$(echo $bssid | tail )					
+		if [ $(echo $bssid | cut -d ' ' -f 3) -ge 36 -a $(echo $bssid | cut -d ' ' -f 4) -ge 27 ]; then					
+			echo "$bssid" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
+		fi
+
+	done
+	for (( i=1; i <= $Lines; ++i )); do # 2.4ghz
+						
+		bssid=$(sed -n "$i"p $HOME/.config/meoConnect/${0##*/}.lst)
+		bssid=$(echo $bssid | tail )					
+		if [ $(echo $bssid | cut -d ' ' -f 3) -le 36 -a $(echo $bssid | cut -d ' ' -f 4) -ge 65 ]; then					
+			echo "$bssid" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
+		fi
+
+	done
+	
+	mv $HOME/.config/meoConnect/${0##*/}.temp.lst $HOME/.config/meoConnect/${0##*/}.lst
+	
+	echo -e "\033[1;92mDone.\033[0m"						
 }
 
 startUp () {
@@ -424,39 +457,6 @@ fi
 echo    "Starting script        : $(date "+%Y-%m-%d - %H:%M:%S")"
 echo -e "-----------------------:-------------------------------------------------------"
 
-}
-
-scanNetworks () {
-
-	echo "-----------------------:-------------------------------------------------------"
-	echo -n "Scanning MEO-WiFi networks: " 				
-	echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-	echo $rPasswd | sudo -S nmcli device wifi rescan > /dev/null 2>&1
-	echo $rPasswd | sudo -S nmcli --fields SSID,BSSID,CHAN,SIGNAL device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
-	Lines=$(wc -l < $HOME/.config/meoConnect/${0##*/}.lst)
-
-	for (( i=1; i <= $Lines; ++i )); do # 5ghz
-						
-		bssid=$(sed -n "$i"p $HOME/.config/meoConnect/${0##*/}.lst)
-		bssid=$(echo $bssid | tail )					
-		if [ $(echo $bssid | cut -d ' ' -f 3) -ge 36 -a $(echo $bssid | cut -d ' ' -f 4) -ge 27 ]; then					
-			echo "$bssid" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
-		fi
-
-	done
-	for (( i=1; i <= $Lines; ++i )); do # 2.4ghz
-						
-		bssid=$(sed -n "$i"p $HOME/.config/meoConnect/${0##*/}.lst)
-		bssid=$(echo $bssid | tail )					
-		if [ $(echo $bssid | cut -d ' ' -f 3) -le 36 -a $(echo $bssid | cut -d ' ' -f 4) -ge 65 ]; then					
-			echo "$bssid" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
-		fi
-
-	done
-	
-	mv $HOME/.config/meoConnect/${0##*/}.temp.lst $HOME/.config/meoConnect/${0##*/}.lst
-	
-	echo -e "\033[1;92mDone.\033[0m"						
 }
 
 # -------------------------------- Scrip Start --------------------------------------

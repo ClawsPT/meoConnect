@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.701'
+version='0.702'
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -455,7 +455,8 @@ scanNetworks () {
 	done
 	
 	mv $HOME/.config/meoConnect/${0##*/}.temp.lst $HOME/.config/meoConnect/${0##*/}.lst
-							
+	
+	echo -e "\033[1;92mDone.\033[0m"						
 }
 
 # -------------------------------- Scrip Start --------------------------------------

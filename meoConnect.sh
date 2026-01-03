@@ -1,6 +1,37 @@
 #!/bin/bash
 
-version='0.705'
+version='0.710'
+
+#------------------------ MEO Wifi AutoConnect -------------------------#
+#                                                                       #
+#                       ... Work in progress ...                        #
+#                                                                       #
+#                   Autoconnect for MEO-WiFi HotSpots                   #
+#                                                                       #
+#                       Special thanks to ravemir                       #
+#               https://github.com/ravemir/meo-wifi-login               #
+#                                                                       #
+#-----------------------------------------------------------------------#
+#                                                                       #
+#                Copyright 2024 ClawsPT <claws@sapo.pt>                 #
+#                                                                       #
+#-----------------------------------------------------------------------#
+#                                                                       #
+#  This program is free software; you can redistribute it and/or modify #
+#  it under the terms of the GNU General Public License as published by #
+#  the Free Software Foundation; either version 2 of the License, or    #
+#  (at your option) any later version.                                  #
+#                                                                       #
+#  This program is distributed in the hope that it will be useful,      #
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of       #
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        #
+#  GNU General Public License for more details.                         #
+#                                                                       #
+#  You should have received a copy of the GNU General Public License    #
+#  along with this program; if not, write to the Free Software          #
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,           #
+#  MA 02110-1301, USA.                                                  #
+#-----------------------------------------------------------------------#
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 confFile="$HOME/.config/meoConnect/${0##*/}.conf"
@@ -11,26 +42,6 @@ OLCmd="$HOME/.config/meoConnect/${0##*/}.OLCmd"
 forceSynctime=0
 remLine=false
 Skip2h=false
-
-#  meoConnect.sh
-#  
-#  Copyright 2024 ClawsPT <claws@sapo.pt>
-#----------------------------------------------------------------------- 
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#  
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#  MA 02110-1301, USA.
-#----------------------------------------------------------------------- 
 
 connectMeoWiFi () {
 		mpg321 -q $OnlineFile > /dev/null 2>&1 &

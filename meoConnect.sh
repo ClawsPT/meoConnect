@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.712'
+version='0.715'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -61,21 +61,19 @@ connectMeoWiFi () {
 		# Get BSSID List.
 			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 			scanNetworks
-			sed -i 's/MEO-WiFi//g' $HOME/.config/meoConnect/${0##*/}.lst
-			sed -i 's/ //g' $HOME/.config/meoConnect/${0##*/}.lst
 			APCount=$(echo -e " $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst)")
 			echo ""
+			echo "     # |         BSSID            |Cha| Signal   "
 			cat -b $HOME/.config/meoConnect/${0##*/}.lst
 			
 			if [ $APCount != 0 ] ; then
 
-				echo "Disconecting from $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')."
 			# Connecting to BSSID list.	
 				bssid=""
-				while read p; do
+				while read bssid; do
 					echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-					echo -n "Connecting to $p: "
-					echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$p"
+					echo -n "Connecting to $(echo $bssid | cut -d ' ' -f 2): "
+					echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$(echo $bssid | cut -d ' ' -f 2)"
 					echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 					nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 					ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
@@ -88,7 +86,7 @@ connectMeoWiFi () {
 				done <$HOME/.config/meoConnect/${0##*/}.lst	
 				else
 					echo " no aps found sleeping 30s."
-						sleep 30
+					sleep 30
 			
 			fi
 			forceSynctime=1
@@ -653,9 +651,13 @@ while true ; do
 			echo ""
 		
 		
+		
+		
 
- 
- 
+
+
+
+
  
  
 			echo ""

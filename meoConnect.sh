@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.715'
+version='0.718'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -42,21 +42,23 @@ OLCmd="$HOME/.config/meoConnect/${0##*/}.OLCmd"
 forceSynctime=0
 remLine=false
 Skip2h=false
+connectOut=""
 
 connectMeoWiFi () {
 		mpg321 -q $OnlineFile > /dev/null 2>&1 &
 		if [ $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p') ] ; then
 			echo "Connecting to          : $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
-
-			echo -n "Login to MEO WiFi      : "
-			connect=$(connectMeoWiFiv2)
-			echo "$connect"
+		
+			connectOut=""
+			connectMeoWiFiv2
+			
 		else
-			connect="NO Session Id Found..."
+			connectOut="NO Session Id Found..."
 		fi
 		
-		if [ "$connect" == "NO Session Id Found..." ] ; then
+		if [ "$connectOut" == "NO Session Id Found..." ] ; then
+		
 			
 		# Get BSSID List.
 			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
@@ -65,6 +67,7 @@ connectMeoWiFi () {
 			echo ""
 			echo "     # |         BSSID            |Cha| Signal   "
 			cat -b $HOME/.config/meoConnect/${0##*/}.lst
+			echo ""
 			
 			if [ $APCount != 0 ] ; then
 
@@ -72,7 +75,7 @@ connectMeoWiFi () {
 				bssid=""
 				while read bssid; do
 					echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-					echo -n "Connecting to $(echo $bssid | cut -d ' ' -f 2): "
+					echo -n "Testing $(echo $bssid | cut -d ' ' -f 2): "
 					echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$(echo $bssid | cut -d ' ' -f 2)"
 					echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 					nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
@@ -98,6 +101,7 @@ connectMeoWiFi () {
 
 connectMeoWiFiv2 () {
 
+	echo -n "Login to MEO WiFi      : "
 	ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 	ip=${ip%/*}	
 	url="https://meowifi.meo.pt/wifim-scl/service/session-status"
@@ -114,14 +118,19 @@ connectMeoWiFiv2 () {
 		login_body="{\"userName\":\"$user\",\"password\":\"$passwd\",\"ipAddress\":\"$ip\",\"sessionId\":\"$sessionId\",\"loginType\":\"login\"}"
 	# Send a POST request for login
 		response=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
-		
-		echo -e "\033[1;92mConnected.\033[0m"
 
+		if [ "$(echo $response | jq -r '.status')" != "AUTHENTICATED" ]; then
+			connectMeoWiFiv2
+			echo -e "\033[1;91m$(echo $response | jq -r '.status').\033[0m"
+		else
+			echo -e "\033[1;92m$(echo $response | jq -r '.status').\033[0m"		
+		fi
+		connectOut="Session Id Found..."
 	else
 		echo -e "NO Session Id Found..."
 		echo -e "\nSession Info           : $sessionInfo"
 		echo "."
-
+		connectOut="NO Session Id Found..."
 	fi
 
 }

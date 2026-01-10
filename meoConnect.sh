@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.722'
+version='0.725'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -184,9 +184,6 @@ editSettings () {
 		connRetry=$sTemp
 	fi
 
-# Text Editor
-	editor='geany'
-	
 	echo ""
 	echo "Note: To Change Command to run on successful login edit"
 	echo "    : $OLCmd"
@@ -239,11 +236,8 @@ passwd='$passwd'
 # Time in seconds between network checks
 recheckTime='$recheckTime'
 
-# Text Editor
-editor='$editor'
-
 # curl command
-curlCmd='-s --interface $wifiif --connect-timeout 20 --max-time 20 -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0"'
+curlCmd='-s --ssl-no-revoke --interface wlan1 --connect-timeout 25 --max-time 25 -H "Cache-Control: no-cache, no-store, must-revalidate, Pragma: no-cache, Expires: 0"'
 
 # Number of retries
 connRetry='$connRetry'
@@ -425,7 +419,7 @@ fi
 source $confFile
 echo -e "Loading Configuration  : \033[1;92mDone.\033[0m"
 echo -n "Checking Dependencies  : "
-for name in geany mpg321 vnstat curl jq awk notify-send
+for name in mpg321 vnstat curl jq awk notify-send
 	do
 	  [[ $(which $name 2>/dev/null) ]] || { echo -en "\n$name needs to be installed. Use 'sudo apt-get install $name'";deps=1; }
 	done

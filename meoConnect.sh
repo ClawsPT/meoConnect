@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.718'
+version='0.719'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -45,58 +45,57 @@ Skip2h=false
 connectOut=""
 
 connectMeoWiFi () {
-		mpg321 -q $OnlineFile > /dev/null 2>&1 &
-		if [ $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p') ] ; then
-			echo "Connecting to          : $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
-			nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+	mpg321 -q $OnlineFile > /dev/null 2>&1 &
+	if [ $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p') ] ; then
+		echo "Connecting to          : $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
+		nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+	
+		connectOut=""
+		connectMeoWiFiv2
 		
-			connectOut=""
-			connectMeoWiFiv2
-			
-		else
-			connectOut="NO Session Id Found..."
-		fi
+	else
+		connectOut="NO Session Id Found..."
+	fi
+	
+	if [ "$connectOut" == "NO Session Id Found..." ] ; then
+	
+	# Get BSSID List.
+		echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+		scanNetworks
+		APCount=$(echo -e " $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst)")
+		echo ""
+		echo "     # |         BSSID            |Cha| Signal   "
+		cat -b $HOME/.config/meoConnect/${0##*/}.lst
+		echo ""
 		
-		if [ "$connectOut" == "NO Session Id Found..." ] ; then
-		
-			
-		# Get BSSID List.
-			echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-			scanNetworks
-			APCount=$(echo -e " $(wc -l < $HOME/.config/meoConnect/${0##*/}.lst)")
-			echo ""
-			echo "     # |         BSSID            |Cha| Signal   "
-			cat -b $HOME/.config/meoConnect/${0##*/}.lst
-			echo ""
-			
-			if [ $APCount != 0 ] ; then
+		if [ $APCount != 0 ] ; then
 
-			# Connecting to BSSID list.	
-				bssid=""
-				while read bssid; do
-					echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-					echo -n "Testing $(echo $bssid | cut -d ' ' -f 2): "
-					echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$(echo $bssid | cut -d ' ' -f 2)"
-					echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-					nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
-					ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
-					if [[ "$ip" != "" ]] ; then
-						echo -e "\033[1;92mDone.\033[0m"
-						break
-					else
-						echo -e "\033[1;91mFail.\033[0m"
-					fi
-				done <$HOME/.config/meoConnect/${0##*/}.lst	
+		# Connecting to BSSID list.	
+			bssid=""
+			while read bssid; do
+				echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
+				echo -n "Testing $(echo $bssid | cut -d ' ' -f 2): "
+				echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$(echo $bssid | cut -d ' ' -f 2)"
+				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+				if [[ "$ip" != "" ]] ; then
+					echo -e "\033[1;92mDone.\033[0m"
+					break
 				else
-					echo " no aps found sleeping 30s."
-					sleep 30
-			
-			fi
-			forceSynctime=1
-			remLine=false
-			connectMeoWiFi
-
+					echo -e "\033[1;91mFail.\033[0m"
+				fi
+			done <$HOME/.config/meoConnect/${0##*/}.lst	
+			else
+				echo " no aps found sleeping 30s."
+				sleep 30
+		
 		fi
+		forceSynctime=1
+		remLine=false
+		connectMeoWiFi
+
+	fi
 }
 
 connectMeoWiFiv2 () {
@@ -120,8 +119,9 @@ connectMeoWiFiv2 () {
 		response=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
 
 		if [ "$(echo $response | jq -r '.status')" != "AUTHENTICATED" ]; then
-			connectMeoWiFiv2
 			echo -e "\033[1;91m$(echo $response | jq -r '.status').\033[0m"
+			connectMeoWiFiv2
+			
 		else
 			echo -e "\033[1;92m$(echo $response | jq -r '.status').\033[0m"		
 		fi

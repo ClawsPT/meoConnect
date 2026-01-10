@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.719'
+version='0.722'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -477,6 +477,21 @@ echo -e "-----------------------:-----------------------------------------------
 
 }
 
+getLoginStatus () {
+
+	loginStatus=""
+	ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+	ip=${ip%/*}	
+	url="https://meowifi.meo.pt/wifim-scl/service/session-status"
+	body="{\"ipAddress\":\"$ip\"}"
+	loginStatus=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$body" "$url")
+	if [ "$(echo $loginStatus | jq -r '.status')" != "AUTHENTICATED" ]; then
+		echo -e "\033[1;91m$(echo $loginStatus | jq -r '.status').\033[0m"
+	else
+		echo -e "\033[1;92m$(echo $loginStatus | jq -r '.status').\033[0m"		
+	fi
+}
+
 # -------------------------------- Scrip Start --------------------------------------
 
 clear
@@ -570,16 +585,16 @@ while true ; do
 		else
 			CTime="\033[1;92m$(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")\033[0m"
 		fi
-		
-		echo -n -e " T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime ))) | $CTime | Dn/Up: ${arrOUT[1]}${arrOUT[2]} / ${arrOUT[3]}${arrOUT[4]}"
+		#T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime ))) | 
+		echo -n -e " $CTime | Dn/Up: ${arrOUT[1]}${arrOUT[2]}/${arrOUT[3]}${arrOUT[4]}"
 		echo -n " | CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')" | "
-		echo $netStatus	
-	else
-
+		echo "$netStatus | $(getLoginStatus)"
+	
 # -------------------------------------- OFFLINE ------------------------------------
-		
+
+	else			
 		echo "-----------------------:-------------------------------------------------------"
-		echo -e " \033[1;91m------ OFFLINE ------\033[0m : At: $(date "+%H:%M:%S") | ConnecTime: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S") | $netStatus"
+		echo -e " \033[1;91m------ OFFLINE ------\033[0m : At: $(date "+%H:%M:%S") | ConnecTime: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S") | $(getLoginStatus)"
 		#mpg321 $OfflineFile > /dev/null 2>&1
 		echo "-----------------------:-------------------------------------------------------"
 		#Login into MEO-WiFi
@@ -589,7 +604,6 @@ while true ; do
 		syncTime
 		totaltime=$(($currenttime - $starttime))
 		forceSynctime=0
-		
 		continue
 	fi
 
@@ -618,6 +632,7 @@ while true ; do
 		read -rsn1 -t 1 skip
 		echo -e -n "\r\033[K"	
 		if [[ $skip = "" ]]; then
+			
 			skipTime=$(expr $skipTime - 1 )
 
 		elif [[ $skip = "h" ]]; then
@@ -654,6 +669,8 @@ while true ; do
 
 		elif [[ $skip = "c" ]]; then
 			editSettings
+			
+			
 # ----------------------------------------------- TESTE -----------------------------------------
 		elif [[ $skip = "t" ]]; then
 			echo "-----------------------:------- TESTE -----------------------------------------"
@@ -661,8 +678,9 @@ while true ; do
 		
 		
 		
-		
-
+			
+			
+			echo $(getLoginStatus)
 
 
 

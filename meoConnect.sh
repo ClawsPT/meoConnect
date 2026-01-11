@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.725'
+version='0.726'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -522,7 +522,6 @@ while true ; do
 				mpg321 $OfflineFile > /dev/null 2>&1
 				echo -e -n "Login to MEO WiFi      : "
 				connectMeoWiFiv2
-#				echo -e "Session ID             : $(echo $sessionId)" # | jq -r '.sessionId')"
 				echo -e "Offline Time           : $(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime )))s"
 				starttime=$(date --date """$(date "+%H:%M:%S")""" +%s)
 				syncTime
@@ -588,7 +587,7 @@ while true ; do
 
 	else			
 		echo "-----------------------:-------------------------------------------------------"
-		echo -e " \033[1;91m------ OFFLINE ------\033[0m : At: $(date "+%H:%M:%S") | ConnecTime: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S") | $(getLoginStatus)"
+		echo -e " \033[1;91m------ OFFLINE ------\033[0m : At: $(date "+%H:%M:%S") | ConnecTime: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
 		#mpg321 $OfflineFile > /dev/null 2>&1
 		echo "-----------------------:-------------------------------------------------------"
 		#Login into MEO-WiFi
@@ -641,11 +640,9 @@ while true ; do
 				read -r -t 25 -p "Connect to: " lineNumber
 				if  [[ $lineNumber != "" ]]; then 
 					bssid=$(sed -n "$lineNumber"p $HOME/.config/meoConnect/${0##*/}.lst)
-					bssid=$(echo $bssid | sed -n 's/.*MEO-WiFi \([0-9\:A-F]\{17\}\).*/\1/p')
-					bssid=$(echo $bssid | cut -c1-17)
 					echo -n "Setting new BSSID      : "					
 					echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-					echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$bssid"
+					echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid $(echo $bssid | cut -d ' ' -f 2)
 					echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
 					nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 					ip=$(ip addr show $wifiif | awk '/inet / {print $2}')

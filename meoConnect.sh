@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.726'
+version='0.727'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -119,7 +119,7 @@ connectMeoWiFiv2 () {
 		response=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
 
 		if [ "$(echo $response | jq -r '.status')" != "AUTHENTICATED" ]; then
-			echo -e "\033[1;91m$(echo $response | jq -r '.status').\033[0m"
+			echo -e "\033[1;91m$(echo $response | jq -r '.status') retrying.\033[0m"
 			connectMeoWiFiv2
 			
 		else

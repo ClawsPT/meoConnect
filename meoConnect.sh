@@ -581,7 +581,7 @@ while true ; do
 		#T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime ))) | 
 		echo -n -e " $CTime | Dn/Up: ${arrOUT[1]}${arrOUT[2]}/${arrOUT[3]}${arrOUT[4]}"
 		echo -n " | CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')" | "
-		echo "$netStatus | $(getLoginStatus)"
+		echo "$netStatus"
 	
 # -------------------------------------- OFFLINE ------------------------------------
 

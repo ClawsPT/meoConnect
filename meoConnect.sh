@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.727'
+version='0.728'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -119,7 +119,7 @@ connectMeoWiFiv2 () {
 		response=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
 
 		if [ "$(echo $response | jq -r '.status')" != "AUTHENTICATED" ]; then
-			echo -e "\033[1;91m$(echo $response | jq -r '.status') retrying.\033[0m"
+			echo -e "\033[1;91m$(echo $response | jq -r '.status') RETRYING.\033[0m"
 			connectMeoWiFiv2
 			
 		else
@@ -356,7 +356,7 @@ scanNetworks () {
 						
 		bssid=$(sed -n "$i"p $HOME/.config/meoConnect/${0##*/}.lst)
 		bssid=$(echo $bssid | tail )					
-		if [ $(echo $bssid | cut -d ' ' -f 3) -ge 36 -a $(echo $bssid | cut -d ' ' -f 4) -ge 27 ]; then					
+		if [ $(echo $bssid | cut -d ' ' -f 3) -ge 36 -a $(echo $bssid | cut -d ' ' -f 4) -ge 29 ]; then					
 			echo "$bssid" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
 		fi
 
@@ -365,7 +365,7 @@ scanNetworks () {
 						
 		bssid=$(sed -n "$i"p $HOME/.config/meoConnect/${0##*/}.lst)
 		bssid=$(echo $bssid | tail )					
-		if [ $(echo $bssid | cut -d ' ' -f 3) -le 36 -a $(echo $bssid | cut -d ' ' -f 4) -ge 65 ]; then					
+		if [ $(echo $bssid | cut -d ' ' -f 3) -le 36 -a $(echo $bssid | cut -d ' ' -f 4) -ge 70 ]; then					
 			echo "$bssid" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
 		fi
 

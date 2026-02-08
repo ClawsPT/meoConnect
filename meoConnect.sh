@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.728'
+version='0.729'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -618,9 +618,12 @@ while true ; do
 	skip=""
 	
 	while [ "$skip" != "f" -a "$skipTime" -ge 0 ] ;do
-		linkQuality=$(iwconfig $wifiif | awk -F= '/Quality/ {print $2}' | awk -F/ '{print $1}')
-	
-		echo -e -n ">>>>   T-$skipTime""s  S:$linkQuality%   \033[4;1mF\033[0morce   c\033[4;1mH\033[0mange AP   \033[4;1mC\033[0monfig    \033[4;1mS\033[0mtatus   \033[4;1mR\033[0meload   \033[4;1mQ\033[0muit <<<"
+		
+		#linkQuality=$(iwconfig $wifiif | awk -F= '/Quality/ {print $2}' | awk -F/ '{print $1}')
+		linkQuality="S:$(cat /proc/net/wireless | grep $wifiif | cut -d ' ' -f 8)dB Q:$(cat /proc/net/wireless | grep $wifiif | cut -d ' ' -f 6)%"
+		
+		
+		echo -e -n ">>>> T-$skipTime""s $linkQuality  \033[4;1mF\033[0morce  c\033[4;1mH\033[0mange AP  \033[4;1mC\033[0monfig   \033[4;1mS\033[0mtatus  \033[4;1mR\033[0meload  \033[4;1mQ\033[0muit <<<"
 		
 		read -rsn1 -t 1 skip
 		echo -e -n "\r\033[K"	

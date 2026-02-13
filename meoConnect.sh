@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.729'
+version='0.734'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #

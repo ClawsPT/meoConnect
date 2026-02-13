@@ -100,7 +100,8 @@ connectMeoWiFi () {
 
 connectMeoWiFiv2 () {
 
-	echo -n "Login to MEO WiFi      : "
+	
+	#echo -n "Login to MEO WiFi $(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime )))s  : "
 	ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
 	ip=${ip%/*}	
 	url="https://meowifi.meo.pt/wifim-scl/service/session-status"
@@ -119,15 +120,20 @@ connectMeoWiFiv2 () {
 		response=$(curl $curlCmd -X POST -H "Content-Type: application/json" -d "$login_body" "$url")
 
 		if [ "$(echo $response | jq -r '.status')" != "AUTHENTICATED" ]; then
-			echo -e "\033[1;91m$(echo $response | jq -r '.status') RETRYING.\033[0m"
+			
+			if [ "$remLine" == "true" ] ; then
+				echo -ne '\e[A\e[K'
+			fi
+			remLine="true"
+			echo -e "Login to MEO WiFi      : \033[1;91m$(echo $response | jq -r '.status') RETRYING.\033[0m - $(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime )))s"
 			connectMeoWiFiv2
 			
 		else
-			echo -e "\033[1;92m$(echo $response | jq -r '.status').\033[0m"		
+			echo -e "Login to MEO WiFi      : \033[1;92m$(echo $response | jq -r '.status').\033[0m"		
 		fi
 		connectOut="Session Id Found..."
 	else
-		echo -e "NO Session Id Found..."
+		echo -e "Login to MEO WiFi      : NO Session Id Found..."
 		echo -e "\nSession Info           : $sessionInfo"
 		echo "."
 		connectOut="NO Session Id Found..."
@@ -520,7 +526,7 @@ while true ; do
 				echo -e " \033[1;91m------ OFFLINE ------\033[0m | At: $(date "+%H:%M:%S") | \033[1;92mRedirected to login portal\033[0m - $netStatus"
 				echo "-----------------------:-------------------------------------------------------"
 				mpg321 $OfflineFile > /dev/null 2>&1
-				echo -e -n "Login to MEO WiFi      : "
+				#echo -e "Login to MEO WiFi      : "
 				connectMeoWiFiv2
 				echo -e "Offline Time           : $(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime )))s"
 				starttime=$(date --date """$(date "+%H:%M:%S")""" +%s)

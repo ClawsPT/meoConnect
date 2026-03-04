@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.734'
+version='0.736'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -43,10 +43,11 @@ forceSynctime=0
 remLine=false
 Skip2h=false
 connectOut=""
+offLineCont=0
 
 connectMeoWiFi () {
 	mpg321 -q $OnlineFile > /dev/null 2>&1 &
-	if [ $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p') ] ; then
+	if [[ $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p') ]] || [[ $offLineCont -ge 4 ]] ; then
 		echo "Connecting to          : $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 		nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 	
@@ -545,7 +546,8 @@ while true ; do
 		echo -ne '\e[1A\e[K'
 		#echo "-----------------------:-------------------------------------------------------"
 		echo -e "\033[1;91m 2 Hour Limit Reached  \033[0m: \033[1;92mreconnecting...\033[0m"
-		sleep 2
+		offLineCont=0
+#		sleep 2
 	fi
 # ---------------------------------- ONLINE -----------------------------------------
 	
@@ -587,7 +589,7 @@ while true ; do
 		#T:$(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime ))) | 
 		echo -n -e " $CTime | Dn/Up: ${arrOUT[1]}${arrOUT[2]}/${arrOUT[3]}${arrOUT[4]}"
 		echo -n " | CPU$cpuuse" $(cat /sys/class/thermal/thermal_zone0/temp | sed 's/\(.\)..$/.\1°C/')" | "
-		echo "$netStatus"
+		echo "$netStatus  | Count: $offLineCont"
 	
 # -------------------------------------- OFFLINE ------------------------------------
 
@@ -603,6 +605,7 @@ while true ; do
 		syncTime
 		totaltime=$(($currenttime - $starttime))
 		forceSynctime=0
+		offLineCont=$offLineCont+1
 		continue
 	fi
 

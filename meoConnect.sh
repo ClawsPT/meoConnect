@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.736'
+version='0.737'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -605,7 +605,7 @@ while true ; do
 		syncTime
 		totaltime=$(($currenttime - $starttime))
 		forceSynctime=0
-		offLineCont=$offLineCont+1
+		offLineCont=$(expr $offLineCont + 1)
 		continue
 	fi
 

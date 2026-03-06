@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.737'
+version='0.738'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -595,7 +595,7 @@ while true ; do
 
 	else			
 		echo "-----------------------:-------------------------------------------------------"
-		echo -e " \033[1;91m------ OFFLINE ------\033[0m : At: $(date "+%H:%M:%S") | ConnecTime: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")"
+		echo -e " \033[1;91m------ OFFLINE ------\033[0m : At: $(date "+%H:%M:%S") | ConnecTime: $(date -d "1970-01-01 + $totaltime seconds" "+%H:%M:%S")  | Count: $offLineCont"
 		#mpg321 $OfflineFile > /dev/null 2>&1
 		echo "-----------------------:-------------------------------------------------------"
 		#Login into MEO-WiFi

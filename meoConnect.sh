@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.738'
+version='0.740'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -47,7 +47,7 @@ offLineCont=0
 
 connectMeoWiFi () {
 	mpg321 -q $OnlineFile > /dev/null 2>&1 &
-	if [[ $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p') ]] || [[ $offLineCont -ge 4 ]] ; then
+	if [[ $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p') ]] || [[ $offLineCont -lt 4 ]] ; then
 		echo "Connecting to          : $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 		nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 	
@@ -55,6 +55,7 @@ connectMeoWiFi () {
 		connectMeoWiFiv2
 		
 	else
+		echo -e "Connecting to          :  \033[1;93mNew BSSID\033[0m"
 		connectOut="NO Session Id Found..."
 	fi
 	

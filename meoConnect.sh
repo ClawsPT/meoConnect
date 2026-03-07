@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.740'
+version='0.741'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -527,7 +527,7 @@ while true ; do
 				echo "-----------------------:-------------------------------------------------------"
 				echo -e " \033[1;91m------ OFFLINE ------\033[0m | At: $(date "+%H:%M:%S") | \033[1;92mRedirected to login portal\033[0m - $netStatus"
 				echo "-----------------------:-------------------------------------------------------"
-				mpg321 $OfflineFile > /dev/null 2>&1
+				mpg321 -q $OfflineFile > /dev/null 2>&1
 				#echo -e "Login to MEO WiFi      : "
 				connectMeoWiFiv2
 				echo -e "Offline Time           : $(printf "%02d" $(($(date --date """$(date "+%Y-%m-%d %H:%M:%S")""" +%s) - $looptime )))s"

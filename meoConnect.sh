@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.741'
+version='0.742'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -284,7 +284,7 @@ syncTime () {
 		XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send  "Successfully connected to MEO WiFi"
 		echo -e "Session ID             : \033[1;92m$sessionId\033[0m"		
 		echo -n -e "Running OLCmd          : \033[0;96m"
-		echo $($OLCmd $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p'))
+		echo $($OLCmd "$(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')  Cont: $offLineCont")
 		echo -e "\033[0m                       : \033[1;92mDone.\033[0m"
 		echo "-----------------------:-------------------------------------------------------"
 		

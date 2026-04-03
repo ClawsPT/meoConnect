@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.746'
+version='0.750'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -75,17 +75,19 @@ connectMeoWiFi () {
 		# Connecting to BSSID list.	
 			bssid=""
 			while read bssid; do
-				echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-				echo -n "Testing $(echo $bssid | cut -d ' ' -f 2): "
-				echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$(echo $bssid | cut -d ' ' -f 2)"
-				echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-				nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
-				ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
-				if [[ "$ip" != "" ]] ; then
-					echo -e "\033[1;92mDone.\033[0m"
-					break
-				else
-					echo -e "\033[1;91mFail.\033[0m"
+				if [[ $(echo $bssid | grep "MEO") ]]; then
+					echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
+					echo -n "Testing $(echo $bssid | cut -d ' ' -f 2): "
+					echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid "$(echo $bssid | cut -d ' ' -f 2)"
+					echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+					nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+					ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+					if [[ "$ip" != "" ]] ; then
+						echo -e "\033[1;92mDone.\033[0m"
+						break
+					else
+						echo -e "\033[1;91mFail.\033[0m"
+					fi
 				fi
 			done <$HOME/.config/meoConnect/${0##*/}.lst	
 			else
@@ -360,6 +362,8 @@ scanNetworks () {
 	echo $rPasswd | sudo -S nmcli --fields SSID,BSSID,CHAN,SIGNAL device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
 	Lines=$(wc -l < $HOME/.config/meoConnect/${0##*/}.lst)
 
+	echo "---------------5ghz----------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
+
 	for (( i=1; i <= $Lines; ++i )); do # 5ghz
 						
 		bssid=$(sed -n "$i"p $HOME/.config/meoConnect/${0##*/}.lst)
@@ -369,6 +373,9 @@ scanNetworks () {
 		fi
 
 	done
+	
+	echo "--------------2.4ghz---------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
+	
 	for (( i=1; i <= $Lines; ++i )); do # 2.4ghz
 						
 		bssid=$(sed -n "$i"p $HOME/.config/meoConnect/${0##*/}.lst)
@@ -379,7 +386,7 @@ scanNetworks () {
 
 	done
 	
-	echo "-----------------------------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
+	echo "----------------ALL----------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
 	
 	for (( i=1; i <= $Lines; ++i )); do # 2.4ghz
 				
@@ -661,22 +668,26 @@ while true ; do
 				read -r -t 25 -p "Connect to: " lineNumber
 				if  [[ $lineNumber != "" ]]; then 
 					bssid=$(sed -n "$lineNumber"p $HOME/.config/meoConnect/${0##*/}.lst)
-					echo -n "Setting new BSSID      : $(echo $bssid | cut -d ' ' -f 2) : "					
-					echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
-					echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid $(echo $bssid | cut -d ' ' -f 2)
-					echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
-					nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
-					ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
-					if [[ "$ip" != "" ]] ; then
-						echo -e "\033[1;92mDone.\033[0m"
-					else
-						echo -e "\033[1;91mFail.\033[0m"
-					fi
+					if [[ $(echo $bssid | grep "MEO") ]]; then
 					
-					forceSynctime=1
-					remLine=false
-					connectMeoWiFi
-					break
+					
+						echo -n "Setting new BSSID      : $(echo $bssid | cut -d ' ' -f 2) : "					
+						echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
+						echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid $(echo $bssid | cut -d ' ' -f 2)
+						echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1
+						nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
+						ip=$(ip addr show $wifiif | awk '/inet / {print $2}')
+						if [[ "$ip" != "" ]] ; then
+							echo -e "\033[1;92mDone.\033[0m"
+						else
+							echo -e "\033[1;91mFail.\033[0m"
+						fi
+						
+						forceSynctime=1
+						remLine=false
+						connectMeoWiFi
+						break
+					fi
 				fi
 
 		elif [[ $skip = "c" ]]; then

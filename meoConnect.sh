@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.743'
+version='0.746'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -379,6 +379,14 @@ scanNetworks () {
 
 	done
 	
+	echo "-----------------------------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
+	
+	for (( i=1; i <= $Lines; ++i )); do # 2.4ghz
+				
+		bssid=$(sed -n "$i"p $HOME/.config/meoConnect/${0##*/}.lst)
+		bssid=$(echo $bssid | tail )									
+		echo "$bssid" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
+	done
 	mv $HOME/.config/meoConnect/${0##*/}.temp.lst $HOME/.config/meoConnect/${0##*/}.lst
 	
 	echo -e "$(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) Found: \033[1;92mDone.\033[0m"						
@@ -653,7 +661,7 @@ while true ; do
 				read -r -t 25 -p "Connect to: " lineNumber
 				if  [[ $lineNumber != "" ]]; then 
 					bssid=$(sed -n "$lineNumber"p $HOME/.config/meoConnect/${0##*/}.lst)
-					echo -n "Setting new BSSID      : "					
+					echo -n "Setting new BSSID      : $(echo $bssid | cut -d ' ' -f 2) : "					
 					echo $rPasswd | sudo -S ifconfig $wifiif down > /dev/null 2>&1
 					echo $rPasswd | sudo -S nmcli connection modify $wifiap 802-11-wireless.bssid $(echo $bssid | cut -d ' ' -f 2)
 					echo $rPasswd | sudo -S ifconfig $wifiif up > /dev/null 2>&1

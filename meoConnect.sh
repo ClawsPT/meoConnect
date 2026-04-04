@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.750'
+version='0.752'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -47,7 +47,7 @@ offLineCont=0
 
 connectMeoWiFi () {
 	mpg321 -q $OnlineFile > /dev/null 2>&1 &
-	if [[ $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p') ]] || [[ $offLineCont -lt 3 ]] ; then
+	if [[ $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p') ]] || [ "$offLineCont" -lt 3 ] ; then
 		echo "Connecting to          : $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 		nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 	

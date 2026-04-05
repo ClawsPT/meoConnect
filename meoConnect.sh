@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.756'
+version='0.757'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -362,7 +362,7 @@ scanNetworks () {
 	echo $rPasswd | sudo -S nmcli --fields SSID,BSSID,CHAN,SIGNAL device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
 	Lines=$(wc -l < $HOME/.config/meoConnect/${0##*/}.lst)
 
-	echo "---------------5ghz----------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
+	echo "------------ Best 5ghz ----------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
 
 	for (( i=1; i <= $Lines; ++i )); do # 5ghz
 						
@@ -374,7 +374,7 @@ scanNetworks () {
 
 	done
 	
-	echo "--------------2.4ghz---------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
+	echo "----------- Best 2.4ghz ---------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
 	
 	for (( i=1; i <= $Lines; ++i )); do # 2.4ghz
 						
@@ -386,7 +386,7 @@ scanNetworks () {
 
 	done
 	
-	echo "----------------ALL----------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
+	echo "--------------- ALL -------------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
 	
 	for (( i=1; i <= $Lines; ++i )); do # 2.4ghz
 				

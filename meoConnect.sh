@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='0.757'
+version='0.760'
 
 #------------------------ MEO Wifi AutoConnect -------------------------#
 #                                                                       #
@@ -47,7 +47,7 @@ offLineCont=0
 
 connectMeoWiFi () {
 	mpg321 -q $OnlineFile > /dev/null 2>&1 &
-	if [[ $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p') ]] && [ "$offLineCont" -le 3 ] ; then
+	if [[ $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p') ]]  ; then  #&& [ "$offLineCont" -le 3 ] ; then
 		echo "Connecting to          : $(iwconfig $wifiif | sed -n 's/.*Access Point: \([0-9\:A-F]\{17\}\).*/\1/p')"
 		nmcli connection up "$wifiap" ifname "$wifiif" > /dev/null 2>&1
 	
@@ -90,9 +90,9 @@ connectMeoWiFi () {
 					fi
 				fi
 			done <$HOME/.config/meoConnect/${0##*/}.lst	
-			else
-				echo " no aps found sleeping 30s."
-				sleep 30
+		else
+			echo " no aps found sleeping 30s."
+			sleep 30
 		
 		fi
 		forceSynctime=1
@@ -361,39 +361,45 @@ scanNetworks () {
 	echo $rPasswd | sudo -S nmcli device wifi rescan ifname $wifiif > /dev/null 2>&1
 	echo $rPasswd | sudo -S nmcli --fields SSID,BSSID,CHAN,SIGNAL device wifi list ifname $wifiif --rescan yes | grep "MEO-WiFi" > $HOME/.config/meoConnect/${0##*/}.lst
 	Lines=$(wc -l < $HOME/.config/meoConnect/${0##*/}.lst)
+	touch $HOME/.config/meoConnect/${0##*/}.temp.lst
+	
+	if [ $Lines -gt 0 ] ; then 
+	
+		echo "------------ Best 5ghz ----------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
 
-	echo "------------ Best 5ghz ----------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
+		for (( i=1; i <= $Lines; ++i )); do # 5ghz
+							
+			bssid=$(sed -n "$i"p $HOME/.config/meoConnect/${0##*/}.lst)
+			bssid=$(echo $bssid | tail )					
+			if [ $(echo $bssid | cut -d ' ' -f 3) -ge 36 -a $(echo $bssid | cut -d ' ' -f 4) -ge 29 ]; then					
+				echo "$bssid" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
+			fi
 
-	for (( i=1; i <= $Lines; ++i )); do # 5ghz
-						
-		bssid=$(sed -n "$i"p $HOME/.config/meoConnect/${0##*/}.lst)
-		bssid=$(echo $bssid | tail )					
-		if [ $(echo $bssid | cut -d ' ' -f 3) -ge 36 -a $(echo $bssid | cut -d ' ' -f 4) -ge 29 ]; then					
+		done
+		
+		echo "----------- Best 2.4ghz ---------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
+		
+		for (( i=1; i <= $Lines; ++i )); do # 2.4ghz
+							
+			bssid=$(sed -n "$i"p $HOME/.config/meoConnect/${0##*/}.lst)
+			bssid=$(echo $bssid | tail )					
+			if [ $(echo $bssid | cut -d ' ' -f 3) -le 36 -a $(echo $bssid | cut -d ' ' -f 4) -ge 70 ]; then					
+				echo "$bssid" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
+			fi
+
+		done
+		
+		echo "--------------- ALL -------------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
+		
+		for (( i=1; i <= $Lines; ++i )); do # 2.4ghz
+					
+			bssid=$(sed -n "$i"p $HOME/.config/meoConnect/${0##*/}.lst)
+			bssid=$(echo $bssid | tail )									
 			echo "$bssid" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
-		fi
-
-	done
+		done
+		
+	fi
 	
-	echo "----------- Best 2.4ghz ---------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
-	
-	for (( i=1; i <= $Lines; ++i )); do # 2.4ghz
-						
-		bssid=$(sed -n "$i"p $HOME/.config/meoConnect/${0##*/}.lst)
-		bssid=$(echo $bssid | tail )					
-		if [ $(echo $bssid | cut -d ' ' -f 3) -le 36 -a $(echo $bssid | cut -d ' ' -f 4) -ge 70 ]; then					
-			echo "$bssid" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
-		fi
-
-	done
-	
-	echo "--------------- ALL -------------------" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
-	
-	for (( i=1; i <= $Lines; ++i )); do # 2.4ghz
-				
-		bssid=$(sed -n "$i"p $HOME/.config/meoConnect/${0##*/}.lst)
-		bssid=$(echo $bssid | tail )									
-		echo "$bssid" >> $HOME/.config/meoConnect/${0##*/}.temp.lst
-	done
 	mv $HOME/.config/meoConnect/${0##*/}.temp.lst $HOME/.config/meoConnect/${0##*/}.lst
 	
 	echo -e "$(wc -l < $HOME/.config/meoConnect/${0##*/}.lst) Found: \033[1;92mDone.\033[0m"						
